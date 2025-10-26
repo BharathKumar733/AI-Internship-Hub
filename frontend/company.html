@@ -288,6 +288,7 @@
         let companyInternships = [];
         let companyApplications = [];
         let applicationFilter = 'all';
+        const API_BASE = 'https://ai-internship-hub-backend.onrender.com/api';
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -320,16 +321,16 @@
                 
                 // Load all company data in parallel
                 const [profileResponse, internshipsResponse, applicationsResponse, statsResponse] = await Promise.all([
-                    fetch('/api/company/profile', {
+                    fetch(`${API_BASE}/company/profile`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }),
-                    fetch('/api/company/internships', {
+                    fetch(`${API_BASE}/company/internships`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }),
-                    fetch('/api/company/applications', {
+                    fetch(`${API_BASE}/company/applications`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }),
-                    fetch('/api/company/dashboard', {
+                    fetch(`${API_BASE}/company/dashboard`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
                 ]);
@@ -691,7 +692,7 @@
         async function loadCompanyInternships() {
             try {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                const response = await fetch('/api/company/internships', {
+                const response = await fetch(`${API_BASE}/company/internships`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -713,7 +714,7 @@
         async function loadCompanyApplications() {
             try {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                const response = await fetch('/api/company/applications', {
+                const response = await fetch(`${API_BASE}/company/applications`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -735,7 +736,7 @@
         async function loadQuickStats() {
             try {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                const response = await fetch('/api/company/dashboard', {
+                const response = await fetch(`${API_BASE}/company/dashboard`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -761,7 +762,7 @@
                 showLoading();
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-                const response = await fetch(`/api/company/internships/${internshipId}`, {
+                const response = await fetch(`${API_BASE}/company/internships/${internshipId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -818,7 +819,7 @@
                     if (minCGPA) params.append('minCGPA', minCGPA);
                     if (skills) params.append('skills', skills);
                     
-                    const response = await fetch(`/api/company/search-students?${params}`, {
+                    const response = await fetch(`${API_BASE}/company/search-students?${params}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -928,7 +929,7 @@
                 // Check both localStorage and sessionStorage for token (following best practices from memory)
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 // Create a temporary form to download with authorization
-                const url = `/api/company/download-resume/${internshipId}/${studentId}?token=${encodeURIComponent(token)}`;
+                const url = `${API_BASE}/company/download-resume/${internshipId}/${studentId}?token=${encodeURIComponent(token)}`;
                 window.open(url, '_blank');
             }
 
@@ -944,7 +945,7 @@
                     // Check both localStorage and sessionStorage for token (following best practices from memory)
                     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-                    const response = await fetch(`/api/company/applications/${internshipId}/${studentId}`, {
+                    const response = await fetch(`${API_BASE}/company/applications/${internshipId}/${studentId}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1098,7 +1099,7 @@
                     // Check both localStorage and sessionStorage for token (following best practices from memory)
                     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                     
-                    const response = await fetch('/api/company/internships', {
+                    const response = await fetch(`${API_BASE}/company/internships`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

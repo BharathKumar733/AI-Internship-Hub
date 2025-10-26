@@ -242,6 +242,7 @@
         let allUsers = [];
         let allInternships = [];
         let activityLogs = [];
+        const API_BASE = 'https://ai-internship-hub-backend.onrender.com/api';
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', () => {
@@ -324,7 +325,7 @@
         async function loadUsers() {
             try {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                const response = await fetch('/api/admin/users', {
+                const response = await fetch(`${API_BASE}/admin/users`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -410,7 +411,7 @@
         async function loadInternships() {
             try {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                const response = await fetch('/api/admin/internships', {
+                const response = await fetch(`${API_BASE}/admin/internships`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -495,7 +496,7 @@
         async function loadActivityLogs() {
             try {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                const response = await fetch('/api/admin/activity-logs', {
+                const response = await fetch(`${API_BASE}/admin/activity-logs`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -699,7 +700,7 @@
                 showLoading();
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 
-                const response = await fetch(`/api/admin/users/${userId}`, {
+                const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -730,7 +731,7 @@
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 const newStatus = isVerified ? 'unverified' : 'verified';
                 
-                const response = await fetch(`/api/admin/users/${companyId}/status`, {
+                const response = await fetch(`${API_BASE}/admin/users/${companyId}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -898,7 +899,7 @@
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 const newStatus = !isActive;
                 
-                const response = await fetch(`/api/admin/internships/${internshipId}/status`, {
+                const response = await fetch(`${API_BASE}/admin/internships/${internshipId}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -931,7 +932,7 @@
                 showLoading();
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-                const response = await fetch(`/api/admin/internships/${internshipId}`, {
+                const response = await fetch(`${API_BASE}/admin/internships/${internshipId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
