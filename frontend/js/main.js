@@ -1,7 +1,7 @@
 // Main JavaScript for the application
 class InternshipApp {
     constructor() {
-        this.apiBase = '/api';
+        this.apiBase = 'https://ai-internship-hub-backend.onrender.com/api';
         this.token = localStorage.getItem('token');
         this.user = JSON.parse(localStorage.getItem('user') || 'null');
         this.init();

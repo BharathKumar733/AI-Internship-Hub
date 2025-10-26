@@ -1,7 +1,7 @@
 // Authentication JavaScript
 class AuthManager {
     constructor() {
-        this.apiBase = '/api';
+        this.apiBase = 'https://ai-internship-hub-backend.onrender.com/api';
         this.currentTab = 'student';
         this.init();
     }

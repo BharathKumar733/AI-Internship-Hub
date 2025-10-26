@@ -1,7 +1,7 @@
 // Dashboard JavaScript
 class DashboardManager {
     constructor() {
-        this.apiBase = '/api';
+        this.apiBase = 'https://ai-internship-hub-backend.onrender.com/api';
         // Check both localStorage and sessionStorage for token and user data
         this.token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const userStorage = localStorage.getItem('user') || sessionStorage.getItem('user');
