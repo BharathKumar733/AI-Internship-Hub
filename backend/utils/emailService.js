@@ -5,20 +5,72 @@ class EmailService {
     console.log('Initializing EmailService');
     console.log('EMAIL_USER:', process.env.EMAIL_USER);
     console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '****' : 'NOT SET');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
     
     // Create transporter with Gmail or any SMTP service
-    this.transporter = nodemailer.createTransport({
+    // Try multiple configuration options for better compatibility
+    const emailConfig = {
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER, // Your email
-        pass: process.env.EMAIL_PASS  // Your app password
-      }
-    });
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      },
+      // Add timeout and security options for better reliability
+      tls: {
+        rejectUnauthorized: false
+      },
+      // Add timeout configuration
+      connectionTimeout: 30000, // 30 seconds
+      greetingTimeout: 30000,
+      socketTimeout: 30000
+    };
+    
+    // If we're in production/render environment, try alternative configuration
+    if (process.env.NODE_ENV === 'production') {
+      // Remove service and use direct SMTP configuration
+      delete emailConfig.service;
+      emailConfig.host = 'smtp.gmail.com';
+      emailConfig.port = 587;
+      emailConfig.secure = false; // true for 465, false for other ports
+      emailConfig.requireTLS = true;
+    }
+    
+    this.transporter = nodemailer.createTransport(emailConfig);
     
     // Verify transporter configuration
     this.transporter.verify((error, success) => {
       if (error) {
         console.error('❌ Email transporter configuration error:', error);
+        // Try alternative configuration for Render
+        if (process.env.NODE_ENV === 'production') {
+          console.log('Trying alternative email configuration for production environment...');
+          const alternativeConfig = {
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS
+            },
+            tls: {
+              rejectUnauthorized: false
+            },
+            connectionTimeout: 30000,
+            greetingTimeout: 30000,
+            socketTimeout: 30000
+          };
+          
+          this.transporter = nodemailer.createTransport(alternativeConfig);
+          
+          this.transporter.verify((altError, altSuccess) => {
+            if (altError) {
+              console.error('❌ Alternative email transporter also failed:', altError);
+              console.log('⚠️ Email service may not work in production. Consider using a dedicated email service like SendGrid.');
+            } else {
+              console.log('✅ Alternative email transporter is ready to send messages');
+            }
+          });
+        }
       } else {
         console.log('✅ Email transporter is ready to send messages');
       }
@@ -178,6 +230,10 @@ class EmailService {
       return true;
     } catch (error) {
       console.error('❌ Error sending OTP email:', error);
+      // Log additional error details for debugging
+      console.error('Error code:', error.code);
+      console.error('Error command:', error.command);
+      
       // Instead of throwing an error, we'll return false to indicate failure
       return false;
     }

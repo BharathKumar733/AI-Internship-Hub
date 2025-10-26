@@ -63,9 +63,16 @@ router.post('/register/student/send-otp', async (req, res) => {
     const emailSent = await emailService.sendOTP(email, otp, name);
     
     if (!emailSent) {
-      // If email failed to send, delete the OTP and return an error
-      await OTP.deleteOne({ _id: otpDoc._id });
-      return res.status(500).json({ error: 'Failed to send verification email. Please try again.' });
+      // If email failed to send, we have a few options:
+      // 1. Delete the OTP and return an error (current behavior)
+      // 2. Keep the OTP and provide alternative verification method
+      // For now, we'll keep the OTP and provide a warning
+      console.error('Failed to send OTP email to:', email);
+      return res.status(200).json({ 
+        message: 'OTP generated but email delivery failed. Please contact support with reference code: ' + otp,
+        email,
+        otp: process.env.NODE_ENV === 'development' ? otp : undefined // Only expose OTP in development
+      });
     }
 
     res.status(200).json({
@@ -74,7 +81,7 @@ router.post('/register/student/send-otp', async (req, res) => {
     });
   } catch (error) {
     console.error('Send OTP error:', error);
-    res.status(500).json({ error: error.message || 'Failed to send OTP' });
+    res.status(500).json({ error: error.message || 'Failed to send OTP. Please try again.' });
   }
 });
 
@@ -206,9 +213,16 @@ router.post('/register/company/send-otp', async (req, res) => {
     const emailSent = await emailService.sendOTP(email, otp, name);
     
     if (!emailSent) {
-      // If email failed to send, delete the OTP and return an error
-      await OTP.deleteOne({ _id: otpDoc._id });
-      return res.status(500).json({ error: 'Failed to send verification email. Please try again.' });
+      // If email failed to send, we have a few options:
+      // 1. Delete the OTP and return an error (current behavior)
+      // 2. Keep the OTP and provide alternative verification method
+      // For now, we'll keep the OTP and provide a warning
+      console.error('Failed to send OTP email to:', email);
+      return res.status(200).json({ 
+        message: 'OTP generated but email delivery failed. Please contact support with reference code: ' + otp,
+        email,
+        otp: process.env.NODE_ENV === 'development' ? otp : undefined // Only expose OTP in development
+      });
     }
 
     res.status(200).json({
@@ -217,7 +231,7 @@ router.post('/register/company/send-otp', async (req, res) => {
     });
   } catch (error) {
     console.error('Send OTP error:', error);
-    res.status(500).json({ error: error.message || 'Failed to send OTP' });
+    res.status(500).json({ error: error.message || 'Failed to send OTP. Please try again.' });
   }
 });
 

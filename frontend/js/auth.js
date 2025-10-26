@@ -410,9 +410,25 @@ class AuthManager {
             if (response.ok) {
                 // Show OTP modal
                 this.showOTPModal(role, userData.email);
+                // If OTP is provided in the response (development only), pre-fill it for easier testing
+                if (result.otp) {
+                    console.warn('Development mode: OTP provided in response for testing purposes:', result.otp);
+                    // Optionally pre-fill the OTP field for development/testing
+                    setTimeout(() => {
+                        const otpInput = document.getElementById('otpInput');
+                        if (otpInput) {
+                          otpInput.value = result.otp;
+                        }
+                      }, 100);
+                }
             } else {
                 this.hideLoading();
-                this.showError(result.error || 'Failed to send OTP. Please try again.');
+                // Provide more specific error messages based on the error type
+                if (result.error && result.error.includes('email')) {
+                  this.showError(result.error + ' Please check your email address and try again. If the problem persists, contact support.');
+                } else {
+                  this.showError(result.error || 'Failed to send OTP. Please try again.');
+                }
             }
         } catch (error) {
             console.error('Send OTP error:', error);
