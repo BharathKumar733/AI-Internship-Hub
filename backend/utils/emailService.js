@@ -1,80 +1,25 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
 class EmailService {
   constructor() {
-    console.log('Initializing EmailService');
-    console.log('EMAIL_USER:', process.env.EMAIL_USER);
-    console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '****' : 'NOT SET');
-    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Initializing SendGrid EmailService');
+    console.log('SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? '****' : 'NOT SET');
+    console.log('EMAIL_FROM:', process.env.EMAIL_FROM || 'darkdevil0753@gmail.com');
     
-    // Create transporter with Gmail or any SMTP service
-    // Try multiple configuration options for better compatibility
-    const emailConfig = {
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      },
-      // Add timeout and security options for better reliability
-      tls: {
-        rejectUnauthorized: false
-      },
-      // Add timeout configuration
-      connectionTimeout: 30000, // 30 seconds
-      greetingTimeout: 30000,
-      socketTimeout: 30000
-    };
+    // Use environment variable for API key, with fallback for development
+    this.SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+    this.fromEmail = process.env.EMAIL_FROM || 'darkdevil0753@gmail.com'; // Verified sender
     
-    // If we're in production/render environment, try alternative configuration
-    if (process.env.NODE_ENV === 'production') {
-      // Remove service and use direct SMTP configuration
-      delete emailConfig.service;
-      emailConfig.host = 'smtp.gmail.com';
-      emailConfig.port = 587;
-      emailConfig.secure = false; // true for 465, false for other ports
-      emailConfig.requireTLS = true;
+    if (!this.SENDGRID_API_KEY) {
+      console.error('❌ SENDGRID_API_KEY is not set in environment variables');
+      console.log('💡 To fix this, set the SENDGRID_API_KEY environment variable in your .env file or Render dashboard');
+      return;
     }
     
-    this.transporter = nodemailer.createTransport(emailConfig);
+    sgMail.setApiKey(this.SENDGRID_API_KEY);
     
-    // Verify transporter configuration
-    this.transporter.verify((error, success) => {
-      if (error) {
-        console.error('❌ Email transporter configuration error:', error);
-        // Try alternative configuration for Render
-        if (process.env.NODE_ENV === 'production') {
-          console.log('Trying alternative email configuration for production environment...');
-          const alternativeConfig = {
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-              user: process.env.EMAIL_USER,
-              pass: process.env.EMAIL_PASS
-            },
-            tls: {
-              rejectUnauthorized: false
-            },
-            connectionTimeout: 30000,
-            greetingTimeout: 30000,
-            socketTimeout: 30000
-          };
-          
-          this.transporter = nodemailer.createTransport(alternativeConfig);
-          
-          this.transporter.verify((altError, altSuccess) => {
-            if (altError) {
-              console.error('❌ Alternative email transporter also failed:', altError);
-              console.log('⚠️ Email service may not work in production. Consider using a dedicated email service like SendGrid.');
-            } else {
-              console.log('✅ Alternative email transporter is ready to send messages');
-            }
-          });
-        }
-      } else {
-        console.log('✅ Email transporter is ready to send messages');
-      }
-    });
+    console.log('✅ SendGrid EmailService initialized');
+    console.log('📧 From email:', this.fromEmail);
   }
 
   // Generate 6-digit OTP
@@ -82,13 +27,59 @@ class EmailService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // Send OTP email
+  // Send OTP email using SendGrid
+  // Function signature: sendOTPEmail(to, subject, text)
+  async sendOTPEmail(to, subject, text) {
+    try {
+      // If SendGrid is not configured, use mock service
+      if (!this.SENDGRID_API_KEY) {
+        console.log('📧 MOCK EMAIL SERVICE: Would send email to:', to);
+        console.log('📧 MOCK EMAIL SERVICE: Subject:', subject);
+        console.log('📧 MOCK EMAIL SERVICE: Text:', text);
+        return true;
+      }
+      
+      console.log('Sending email to:', to);
+      
+      const msg = {
+        to: to,
+        from: this.fromEmail,
+        subject: subject,
+        text: text
+      };
+
+      await sgMail.send(msg);
+      console.log('✅ Email sent via SendGrid to:', to);
+      return true;
+    } catch (error) {
+      console.error('❌ Error sending email via SendGrid:', error);
+      
+      // Log additional error details for debugging
+      if (error.response) {
+        console.error('SendGrid error response:', error.response.body);
+      }
+      
+      // Instead of throwing an error, we'll return false to indicate failure
+      return false;
+    }
+  }
+
+  // Send OTP email with HTML template (original function)
   async sendOTP(email, otp, name) {
     try {
+      // If SendGrid is not configured, use mock service
+      if (!this.SENDGRID_API_KEY) {
+        console.log('📧 MOCK EMAIL SERVICE: Would send OTP email to:', email);
+        console.log('📧 MOCK EMAIL SERVICE: OTP code is:', otp);
+        console.log('📧 MOCK EMAIL SERVICE: Recipient name is:', name);
+        return true;
+      }
+      
       console.log('Sending OTP email to:', email);
-      const mailOptions = {
-        from: `"AI Internship Hub" <${process.env.EMAIL_USER}>`,
+      
+      const msg = {
         to: email,
+        from: this.fromEmail,
         subject: 'Verify Your Email - OTP Code',
         html: `
           <!DOCTYPE html>
@@ -225,14 +216,16 @@ class EmailService {
         `
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('✅ OTP email sent:', info.messageId);
+      await sgMail.send(msg);
+      console.log('✅ OTP email sent via SendGrid to:', email);
       return true;
     } catch (error) {
-      console.error('❌ Error sending OTP email:', error);
+      console.error('❌ Error sending OTP email via SendGrid:', error);
+      
       // Log additional error details for debugging
-      console.error('Error code:', error.code);
-      console.error('Error command:', error.command);
+      if (error.response) {
+        console.error('SendGrid error response:', error.response.body);
+      }
       
       // Instead of throwing an error, we'll return false to indicate failure
       return false;
@@ -242,11 +235,17 @@ class EmailService {
   // Send welcome email after successful registration
   async sendWelcomeEmail(email, name, role) {
     try {
+      // If SendGrid is not configured, skip welcome email
+      if (!this.SENDGRID_API_KEY) {
+        console.log('📧 MOCK EMAIL SERVICE: Skipping welcome email for:', email);
+        return;
+      }
+      
       const roleDisplay = role === 'student' ? 'Student' : 'Company';
       
-      const mailOptions = {
-        from: `"AI Internship Hub" <${process.env.EMAIL_USER}>`,
+      const msg = {
         to: email,
+        from: this.fromEmail,
         subject: `Welcome to AI Internship Hub! 🎉`,
         html: `
           <!DOCTYPE html>
@@ -382,7 +381,7 @@ class EmailService {
                 `}
                 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="http://localhost:3000/login.html" class="cta-button">
+                  <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html" class="cta-button">
                     🚀 Get Started
                   </a>
                 </div>
@@ -400,11 +399,14 @@ class EmailService {
         `
       };
 
-      await this.transporter.sendMail(mailOptions);
-      console.log('✅ Welcome email sent to:', email);
+      await sgMail.send(msg);
+      console.log('✅ Welcome email sent via SendGrid to:', email);
     } catch (error) {
-      console.error('❌ Error sending welcome email:', error);
+      console.error('❌ Error sending welcome email via SendGrid:', error);
       // Don't throw error, welcome email is not critical
+      if (error.response) {
+        console.error('SendGrid error response:', error.response.body);
+      }
     }
   }
 }
