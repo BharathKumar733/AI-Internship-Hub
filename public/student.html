@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - AI Internship Recommender</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>AI Internship Hub</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#dashboard" class="nav-link active">Dashboard</a>
+                <a href="#recommendations" class="nav-link">Recommendations</a>
+                <a href="#applications" class="nav-link">Applications</a>
+                <a href="#profile" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-auth">
+                <div class="user-menu">
+                    <button class="user-button">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userName">Student</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown">
+                        <a href="#profile"><i class="fas fa-user"></i> Profile</a>
+                        <a href="#settings"><i class="fas fa-cog"></i> Settings</a>
+                        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="dashboard-section active">
+            <div class="container">
+                <div class="dashboard-header">
+                    <h1>Welcome back, <span id="studentName">Student</span>!</h1>
+                    <p>Here's your personalized internship dashboard</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalApplications">0</h3>
+                            <p>Applications Sent</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="pendingApplications">0</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="acceptedApplications">0</h3>
+                            <p>Accepted</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="matchScore">0%</h3>
+                            <p>Avg Match Score</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h2>Quick Actions</h2>
+                    <div class="actions-grid">
+                        <button class="action-card" onclick="uploadResume()">
+                            <i class="fas fa-upload"></i>
+                            <h3>Upload Resume</h3>
+                            <p>Get AI-powered skill analysis</p>
+                        </button>
+                        <button class="action-card" onclick="viewRecommendations()">
+                            <i class="fas fa-lightbulb"></i>
+                            <h3>View Recommendations</h3>
+                            <p>See personalized matches</p>
+                        </button>
+                        <button class="action-card" onclick="searchInternships()">
+                            <i class="fas fa-search"></i>
+                            <h3>Search Internships</h3>
+                            <p>Find opportunities</p>
+                        </button>
+                        <button class="action-card" onclick="updateProfile()">
+                            <i class="fas fa-user-edit"></i>
+                            <h3>Update Profile</h3>
+                            <p>Keep your info current</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <h2>Recent Activity</h2>
+                    <div class="activity-list" id="activityList">
+                        <!-- Activity items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section id="recommendations" class="recommendations-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>AI-Powered Recommendations</h2>
+                    <p>Internships matched to your skills and preferences</p>
+                </div>
+
+                <div class="recommendations-filters">
+                    <div class="filter-group">
+                        <label>Sort by:</label>
+                        <select id="sortBy">
+                            <option value="match">Match Score</option>
+                            <option value="date">Date Posted</option>
+                            <option value="stipend">Stipend</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Location:</label>
+                        <select id="locationFilter">
+                            <option value="">All Locations</option>
+                            <option value="remote">Remote</option>
+                            <option value="onsite">On-site</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="refreshRecommendations()">
+                        <i class="fas fa-sync"></i>
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="recommendations-grid" id="recommendationsGrid">
+                    <!-- Recommendations will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Applications Section -->
+        <section id="applications" class="applications-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>My Applications</h2>
+                    <p>Track your application status</p>
+                </div>
+
+                <div class="applications-filters">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-status="all">All</button>
+                        <button class="filter-tab" data-status="pending">Pending</button>
+                        <button class="filter-tab" data-status="accepted">Accepted</button>
+                        <button class="filter-tab" data-status="rejected">Rejected</button>
+                    </div>
+                </div>
+
+                <div class="applications-list" id="applicationsList">
+                    <!-- Applications will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="profile-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>My Profile</h2>
+                    <p>Manage your personal information</p>
+                </div>
+
+                <div class="profile-content">
+                    <div class="profile-sidebar">
+                        <div class="profile-card">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h3 id="profileName">Student Name</h3>
+                            <p id="profileEmail">student@email.com</p>
+                            <div class="profile-stats">
+                                <div class="stat">
+                                    <span class="stat-value" id="profileCGPA">8.5</span>
+                                    <span class="stat-label">CGPA</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value" id="profileBranch">CS</span>
+                                    <span class="stat-label">Branch</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-main">
+                        <div class="profile-tabs">
+                            <button class="profile-tab active" data-tab="personal">Personal Info</button>
+                            <button class="profile-tab" data-tab="skills">Skills & Resume</button>
+                            <button class="profile-tab" data-tab="preferences">Preferences</button>
+                        </div>
+
+                        <div class="profile-tab-content">
+                            <!-- Personal Info Tab -->
+                            <div class="tab-pane active" id="personalTab">
+                                <form class="profile-form" id="personalForm">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="name">Full Name</label>
+                                            <input type="text" id="name" name="name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input type="email" id="email" name="email" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="branch">Branch</label>
+                                            <select id="branch" name="branch" required>
+                                                <option value="Computer Science">Computer Science</option>
+                                                <option value="Information Technology">Information Technology</option>
+                                                <option value="Electronics">Electronics & Communication</option>
+                                                <option value="Mechanical">Mechanical Engineering</option>
+                                                <option value="Civil">Civil Engineering</option>
+                                                <option value="Business">Business Administration</option>
+                                                <option value="Data Science">Data Science</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="cgpa">CGPA</label>
+                                            <input type="number" id="cgpa" name="cgpa" min="0" max="10" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                                </form>
+                            </div>
+
+                            <!-- Skills & Resume Tab -->
+                            <div class="tab-pane" id="skillsTab">
+                                <div class="resume-upload">
+                                    <h3>Resume Upload</h3>
+                                    <div class="upload-area" id="uploadArea">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <h4>Drop your resume here or click to browse</h4>
+                                        <p>Supports PDF, DOC, DOCX files (Max 5MB)</p>
+                                        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" hidden>
+                                    </div>
+                                    <div class="current-resume" id="currentResume" style="display: none;">
+                                        <h4>Current Resume</h4>
+                                        <div class="resume-info">
+                                            <i class="fas fa-file-pdf"></i>
+                                            <span>resume.pdf</span>
+                                            <button class="btn btn-outline btn-sm" onclick="downloadResume()">Download</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="skills-section">
+                                    <h3>Extracted Skills</h3>
+                                    <div class="skills-list" id="skillsList">
+                                        <!-- Skills will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preferences Tab -->
+                            <div class="tab-pane" id="preferencesTab">
+                                <form class="profile-form" id="preferencesForm">
+                                    <div class="form-group">
+                                        <label for="interests">Interests</label>
+                                        <input type="text" id="interests" name="interests" placeholder="Web Development, Data Science, AI">
+                                        <small>Separate multiple interests with commas</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="preferredLocation">Preferred Location</label>
+                                        <input type="text" id="preferredLocation" name="preferredLocation" placeholder="Bangalore, Mumbai, Remote">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="preferredDuration">Preferred Duration</label>
+                                        <select id="preferredDuration" name="preferredDuration">
+                                            <option value="1-3 months">1-3 months</option>
+                                            <option value="3-6 months">3-6 months</option>
+                                            <option value="6+ months">6+ months</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Save Preferences</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Chat Section -->
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

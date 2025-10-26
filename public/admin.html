@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AI Internship Recommender</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>AI Internship Hub</span>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="#users" class="nav-link">Users</a>
+                <a href="#internships" class="nav-link">Internships</a>
+                <a href="#logs" class="nav-link">Activity Logs</a>
+            </div>
+            <div class="nav-auth">
+                <div class="user-menu">
+                    <span class="user-name" id="userName">Admin</span>
+                    <button class="btn btn-outline" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <div class="welcome-content">
+                    <h1>Admin Dashboard</h1>
+                    <p>Monitor and manage the internship platform</p>
+                </div>
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-briefcase"></i>
+                        <div class="stat-info">
+                            <h3 id="totalInternships">0</h3>
+                            <p>Active Internships</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="stat-info">
+                            <h3 id="totalApplications">0</h3>
+                            <p>Total Applications</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chart-line"></i>
+                        <div class="stat-info">
+                            <h3 id="totalActivity">0</h3>
+                            <p>Today's Activity</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Management -->
+            <section id="users" class="dashboard-section">
+                <div class="section-header">
+                    <h2>User Management</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-outline" onclick="refreshUsers()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="showCreateUser()">
+                            <i class="fas fa-plus"></i>
+                            Add User
+                        </button>
+                    </div>
+                </div>
+                <div class="user-tabs">
+                    <button class="tab-btn active" onclick="showUserTab('students')">Students</button>
+                    <button class="tab-btn" onclick="showUserTab('companies')">Companies</button>
+                </div>
+                <div id="usersList" class="users-grid">
+                    <!-- Users will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Internships Management -->
+            <section id="internships" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Internships Management</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-outline" onclick="refreshInternships()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="showCreateInternship()">
+                            <i class="fas fa-plus"></i>
+                            Add Internship
+                        </button>
+                    </div>
+                </div>
+                <div id="internshipsList" class="internships-grid">
+                    <!-- Internships will be loaded here -->
+                </div>
+            </section>
+
+
+
+            <!-- Activity Logs -->
+            <section id="logs" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Activity Logs</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-outline" onclick="refreshLogs()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportLogs()">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+                <div class="log-filters">
+                    <select id="logUserType" onchange="filterLogs()">
+                        <option value="">All Users</option>
+                        <option value="Student">Students</option>
+                        <option value="Company">Companies</option>
+                        <option value="Admin">Admins</option>
+                    </select>
+                    <select id="logAction" onchange="filterLogs()">
+                        <option value="">All Actions</option>
+                        <option value="login">Login</option>
+                        <option value="register">Registration</option>
+                        <option value="upload_resume">Resume Upload</option>
+                        <option value="apply_internship">Application</option>
+                    </select>
+                    <input type="date" id="logDate" onchange="filterLogs()">
+                </div>
+                <div id="logsList" class="logs-list">
+                    <!-- Activity logs will be loaded here -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <script>
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showMessage(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+        
+        // Utility function to convert currency to INR format
+        function convertToINR(amount) {
+            if (!amount) return 'Not specified';
+            
+            // If it's already in INR format with /month, return as is
+            if (typeof amount === 'string' && amount.includes('₹') && amount.includes('/month')) {
+                return amount;
+            }
+            
+            // If it's a string with ₹ but no /month, add it
+            if (typeof amount === 'string' && amount.includes('₹') && !amount.includes('/month')) {
+                // Extract amount and reformat
+                const inrMatch = amount.match(/[₹$]?([\d,]+)/);
+                if (inrMatch) {
+                    const amt = parseFloat(inrMatch[1].replace(/,/g, ''));
+                    const formattedINR = new Intl.NumberFormat('en-IN').format(amt);
+                    return `₹${formattedINR}/month`;
+                }
+            }
+            
+            // If it's a string with $, convert to INR
+            if (typeof amount === 'string' && amount.includes('$')) {
+                const usdMatch = amount.match(/\$([\d,]+)/i);
+                if (usdMatch) {
+                    const usdAmount = parseFloat(usdMatch[1].replace(/,/g, ''));
+                    const inrAmount = Math.round(usdAmount * 83); // 1 USD = 83 INR
+                    const formattedINR = new Intl.NumberFormat('en-IN').format(inrAmount);
+                    return `₹${formattedINR}/month`;
+                }
+            }
+            
+            // If it's a number or numeric string, format it as INR
+            const num = parseFloat(amount);
+            if (!isNaN(num)) {
+                const formattedINR = new Intl.NumberFormat('en-IN').format(num);
+                return `₹${formattedINR}/month`;
+            }
+            
+            return 'Not specified';
+        }
+        // Admin-specific JavaScript
+        let currentUser = null;
+        let currentUserTab = 'students';
+        let allUsers = [];
+        let allInternships = [];
+        let activityLogs = [];
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadAdminData();
+            setupNavigation();
+        });
+
+        // Setup navigation for admin page
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetSection = document.getElementById(targetId);
+                    
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ 
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                        history.pushState(null, null, `#${targetId}`);
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            // Handle initial hash
+            const hash = window.location.hash;
+            if (hash) {
+                const targetSection = document.querySelector(hash);
+                if (targetSection) {
+                    setTimeout(() => {
+                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 500);
+                    navLinks.forEach(link => {
+                        if (link.getAttribute('href') === hash) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            }
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const userStorage = localStorage.getItem('user') || sessionStorage.getItem('user');
+            const user = userStorage ? JSON.parse(userStorage) : {};
+            
+            if (!token || user.role !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            currentUser = user;
+            document.getElementById('userName').textContent = user.name || 'Admin';
+        }
+
+        async function loadAdminData() {
+            try {
+                showLoading();
+                await Promise.all([
+                    loadUsers(),
+                    loadInternships(),
+                    loadActivityLogs()
+                ]);
+                // Update quick stats using loaded data
+                updateQuickStatsSimple();
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showMessage('Error loading data', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allUsers = data.users || [];
+                    displayUsers();
+                    // Update quick stats after loading users
+                    updateQuickStatsSimple();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function displayUsers() {
+            const container = document.getElementById('usersList');
+            const filteredUsers = allUsers.filter(user => 
+                currentUserTab === 'students' ? user.type === 'student' : user.type === 'company'
+            );
+            
+            if (filteredUsers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>No ${currentUserTab} found</h3>
+                        <p>No ${currentUserTab} have registered yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredUsers.map(user => `
+                <div class="user-card">
+                    <div class="user-header">
+                        <h4>${user.name}</h4>
+                        <span class="role-badge ${user.type}">${user.type}</span>
+                    </div>
+                    <div class="user-details">
+                        <p><i class="fas fa-envelope"></i> ${user.email}</p>
+                        ${user.type === 'student' ? `
+                            <p><i class="fas fa-graduation-cap"></i> ${user.branch || 'N/A'}</p>
+                            <p><i class="fas fa-star"></i> CGPA: ${user.cgpa || 'N/A'}</p>
+                            <p><i class="fas fa-file-alt"></i> Applications: ${user.applications ? user.applications.length : 0}</p>
+                        ` : `
+                            <p><i class="fas fa-building"></i> ${user.industry || 'N/A'}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${user.location || 'N/A'}</p>
+                            <p><i class="fas fa-briefcase"></i> Internships: ${user.internships ? user.internships.length : 0}</p>
+                            <p><i class="fas fa-shield-alt"></i> ${user.isVerified ? 'Verified' : 'Not Verified'}</p>
+                        `}
+                        <p><i class="fas fa-calendar"></i> Joined: ${new Date(user.createdAt).toLocaleDateString()}</p>
+                        <p><i class="fas fa-history"></i> Last Login: ${user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-outline" onclick="viewUserDetails('${user._id}', '${user.type}')">
+                            <i class="fas fa-eye"></i>
+                            View
+                        </button>
+                        ${user.type === 'company' ? `
+                            <button class="btn ${user.isVerified ? 'btn-warning' : 'btn-success'}" onclick="toggleCompanyVerification('${user._id}', ${user.isVerified})">
+                                <i class="fas fa-${user.isVerified ? 'times' : 'check'}"></i>
+                                ${user.isVerified ? 'Unverify' : 'Verify'}
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-danger" onclick="deleteUser('${user._id}', '${user.type}')">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showUserTab(tab) {
+            currentUserTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayUsers();
+        }
+
+        async function loadInternships() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetch('/api/admin/internships', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allInternships = data.internships || [];
+                    displayInternships();
+                    // Update quick stats after loading internships
+                    updateQuickStatsSimple();
+                }
+            } catch (error) {
+                console.error('Error loading internships:', error);
+            }
+        }
+
+        function displayInternships() {
+            const container = document.getElementById('internshipsList');
+            
+            if (allInternships.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-briefcase"></i>
+                        <h3>No Internships</h3>
+                        <p>No internships have been created yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = allInternships.map(internship => `
+                <div class="internship-card">
+                    <div class="internship-header">
+                        <h3>${internship.title}</h3>
+                        <span class="status-badge ${internship.isActive ? 'active' : 'inactive'}">
+                            ${internship.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                    <p class="internship-company">Company: ${internship.companyName}</p>
+                    <p class="internship-description">${internship.description.substring(0, 100)}${internship.description.length > 100 ? '...' : ''}</p>
+                    <div class="internship-details">
+                        <div class="detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${internship.location}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-clock"></i>
+                            <span>${internship.duration}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span>${convertToINR(internship.stipend)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-users"></i>
+                            <span>${internship.currentApplications}/${internship.maxApplications} applications</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Deadline: ${new Date(internship.applicationDeadline).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="internship-actions">
+                        <button class="btn btn-outline" onclick="viewInternshipDetails('${internship._id}')">
+                            <i class="fas fa-eye"></i>
+                            View
+                        </button>
+                        <button class="btn ${internship.isActive ? 'btn-warning' : 'btn-success'}" onclick="toggleInternshipStatus('${internship._id}', ${internship.isActive})">
+                            <i class="fas fa-${internship.isActive ? 'pause' : 'play'}"></i>
+                            ${internship.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteInternship('${internship._id}')">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadActivityLogs() {
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetch('/api/admin/activity-logs', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activityLogs = data.logs || [];
+                    displayActivityLogs();
+                }
+            } catch (error) {
+                console.error('Error loading activity logs:', error);
+            }
+        }
+
+        function displayActivityLogs() {
+            const container = document.getElementById('logsList');
+            
+            if (activityLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>No Activity Logs</h3>
+                        <p>No activity has been recorded yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = activityLogs.slice(0, 20).map(log => `
+                <div class="log-item">
+                    <div class="log-header">
+                        <span class="log-user">${log.userName}</span>
+                        <span class="log-action">${log.action}</span>
+                        <span class="log-time">${new Date(log.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div class="log-details">
+                        <p>${log.details}</p>
+                        <div class="log-meta">
+                            <span>IP: ${log.ipAddress}</span>
+                            <span>Browser: ${log.userAgent}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Simplified quick stats update using already loaded data
+        function updateQuickStatsSimple() {
+            try {
+                // Count students and companies
+                const studentCount = allUsers.filter(user => user.type === 'student').length;
+                const companyCount = allUsers.filter(user => user.type === 'company').length;
+                
+                // Count active internships
+                const activeInternshipCount = allInternships.filter(internship => internship.isActive).length;
+                
+                // Count total applications
+                const totalApplications = allInternships.reduce((sum, internship) => 
+                    sum + (internship.currentApplications || 0), 0);
+                
+                // Update the display
+                document.getElementById('totalUsers').textContent = studentCount + companyCount;
+                document.getElementById('totalInternships').textContent = activeInternshipCount;
+                document.getElementById('totalApplications').textContent = totalApplications;
+                
+                // For activity, we'll use the already loaded activity logs
+                const today = new Date().toDateString();
+                const todayActivity = activityLogs ? activityLogs.filter(log => 
+                    new Date(log.timestamp).toDateString() === today
+                ).length : 0;
+                
+                document.getElementById('totalActivity').textContent = todayActivity;
+            } catch (error) {
+                console.error('Error updating quick stats:', error);
+            }
+        }
+
+        function refreshUsers() {
+            loadUsers();
+        }
+
+        function refreshInternships() {
+            loadInternships();
+        }
+
+        function refreshLogs() {
+            loadActivityLogs();
+        }
+
+
+
+        function showCreateUser() {
+            showMessage('Create user feature is not implemented yet.', 'info');
+        }
+
+        function showCreateInternship() {
+            showMessage('Create internship feature is not implemented yet.', 'info');
+        }
+
+        function viewUserDetails(userId, userType) {
+            // Find the user in our data
+            const user = allUsers.find(u => u._id === userId && u.type === userType);
+            if (!user) {
+                showMessage('User not found', 'error');
+                return;
+            }
+
+            // Create detailed modal
+            const modalHTML = `
+                <div class="modal-overlay" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 2rem;">
+                    <div class="modal-container" onclick="event.stopPropagation()" style="background: white; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
+                        <div style="padding: 2rem;">
+                            <!-- Header -->
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                                <div>
+                                    <h2 style="margin: 0 0 0.5rem 0; color: #333; font-size: 1.8rem;">${user.name}</h2>
+                                    <p style="margin: 0; color: #667eea; font-size: 1.1rem; font-weight: 600;">
+                                        <i class="fas fa-${userType === 'student' ? 'user-graduate' : 'building'}"></i> ${userType === 'student' ? 'Student' : 'Company'}
+                                    </p>
+                                </div>
+                                <button onclick="this.closest('.modal-overlay').remove()" style="background: #f3f4f6; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #666;">&times;</button>
+                            </div>
+                            
+                            <!-- User Details -->
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                                <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                        <i class="fas fa-info-circle"></i> Basic Information
+                                    </h3>
+                                    <p><strong>Email:</strong> ${user.email}</p>
+                                    <p><strong>Joined:</strong> ${new Date(user.createdAt).toLocaleDateString()}</p>
+                                    <p><strong>Last Login:</strong> ${user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</p>
+                                </div>
+                                
+                                ${userType === 'student' ? `
+                                    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                        <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                            <i class="fas fa-graduation-cap"></i> Academic Info
+                                        </h3>
+                                        <p><strong>Branch:</strong> ${user.branch || 'N/A'}</p>
+                                        <p><strong>CGPA:</strong> ${user.cgpa || 'N/A'}</p>
+                                        <p><strong>Applications:</strong> ${user.applications ? user.applications.length : 0}</p>
+                                    </div>
+                                    
+                                    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px; grid-column: span 2;">
+                                        <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                            <i class="fas fa-code"></i> Skills
+                                        </h3>
+                                        ${user.skills && user.skills.length > 0 ? `
+                                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                                                ${user.skills.map(skill => 
+                                                    `<span style="background: #667eea; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">${skill}</span>`
+                                                ).join('')}
+                                            </div>
+                                        ` : '<p>No skills listed</p>'}
+                                    </div>
+                                ` : `
+                                    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                        <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                            <i class="fas fa-building"></i> Company Info
+                                        </h3>
+                                        <p><strong>Industry:</strong> ${user.industry || 'N/A'}</p>
+                                        <p><strong>Location:</strong> ${user.location || 'N/A'}</p>
+                                        <p><strong>Size:</strong> ${user.companySize || 'N/A'}</p>
+                                        <p><strong>Status:</strong> ${user.isVerified ? 'Verified' : 'Not Verified'}</p>
+                                        <p><strong>Internships:</strong> ${user.internships ? user.internships.length : 0}</p>
+                                    </div>
+                                `}
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div style="display: flex; gap: 1rem; padding-top: 1rem; border-top: 2px solid #f3f4f6;">
+                                ${userType === 'company' ? `
+                                    <button onclick="toggleCompanyVerification('${user._id}', ${user.isVerified}); this.closest('.modal-overlay').remove();" class="btn ${user.isVerified ? 'btn-warning' : 'btn-success'}" style="flex: 1; padding: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                        <i class="fas fa-${user.isVerified ? 'times' : 'check'}"></i>
+                                        ${user.isVerified ? 'Unverify Company' : 'Verify Company'}
+                                    </button>
+                                ` : ''}
+                                <button onclick="deleteUser('${user._id}', '${userType}'); this.closest('.modal-overlay').remove();" class="btn btn-danger" style="flex: 1; padding: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <i class="fas fa-trash"></i>
+                                    Delete ${userType === 'student' ? 'Student' : 'Company'}
+                                </button>
+                                <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-outline" style="padding: 1rem 1.5rem;">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        async function deleteUser(userId, userType) {
+            const confirmed = confirm(`Are you sure you want to permanently delete this ${userType}? This action cannot be undone.`);
+            if (!confirmed) return;
+
+            try {
+                showLoading();
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ type: userType })
+                });
+
+                if (response.ok) {
+                    showMessage(`${userType === 'student' ? 'Student' : 'Company'} deleted successfully!`, 'success');
+                    // Refresh the user list
+                    await loadUsers();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to delete user', 'error');
+                }
+            } catch (error) {
+                console.error('Delete user error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function toggleCompanyVerification(companyId, isVerified) {
+            try {
+                showLoading();
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const newStatus = isVerified ? 'unverified' : 'verified';
+                
+                const response = await fetch(`/api/admin/users/${companyId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        type: 'company',
+                        status: newStatus
+                    })
+                });
+
+                if (response.ok) {
+                    showMessage(`Company ${newStatus} successfully!`, 'success');
+                    // Refresh the user list
+                    await loadUsers();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to update company status', 'error');
+                }
+            } catch (error) {
+                console.error('Update company status error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function viewInternshipDetails(internshipId) {
+            // Find the internship in our data
+            const internship = allInternships.find(i => i._id === internshipId);
+            if (!internship) {
+                showMessage('Internship not found', 'error');
+                return;
+            }
+
+            // Create detailed modal
+            const modalHTML = `
+                <div class="modal-overlay" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 2rem;">
+                    <div class="modal-container" onclick="event.stopPropagation()" style="background: white; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
+                        <div style="padding: 2rem;">
+                            <!-- Header -->
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                                <div>
+                                    <h2 style="margin: 0 0 0.5rem 0; color: #333; font-size: 1.8rem;">${internship.title}</h2>
+                                    <p style="margin: 0; color: #667eea; font-size: 1.1rem; font-weight: 600;">
+                                        <i class="fas fa-building"></i> ${internship.companyName}
+                                    </p>
+                                </div>
+                                <button onclick="this.closest('.modal-overlay').remove()" style="background: #f3f4f6; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; color: #666;">&times;</button>
+                            </div>
+                            
+                            <!-- Status Badge -->
+                            <div style="margin-bottom: 1.5rem;">
+                                <span class="status-badge ${internship.isActive ? 'active' : 'inactive'}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                    ${internship.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                            
+                            <!-- Internship Details -->
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                                <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                        <i class="fas fa-info-circle"></i> Basic Information
+                                    </h3>
+                                    <p><strong>Location:</strong> ${internship.location}</p>
+                                    <p><strong>Mode:</strong> ${internship.mode}</p>
+                                    <p><strong>Duration:</strong> ${internship.duration}</p>
+                                    <p><strong>Stipend:</strong> ${convertToINR(internship.stipend)}</p>
+                                </div>
+                                
+                                <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                        <i class="fas fa-calendar"></i> Dates
+                                    </h3>
+                                    <p><strong>Start Date:</strong> ${new Date(internship.startDate).toLocaleDateString()}</p>
+                                    <p><strong>End Date:</strong> ${new Date(internship.endDate).toLocaleDateString()}</p>
+                                    <p><strong>Application Deadline:</strong> ${new Date(internship.applicationDeadline).toLocaleDateString()}</p>
+                                </div>
+                                
+                                <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                        <i class="fas fa-users"></i> Applications
+                                    </h3>
+                                    <p><strong>Current Applications:</strong> ${internship.currentApplications}</p>
+                                    <p><strong>Max Applications:</strong> ${internship.maxApplications}</p>
+                                    <p><strong>Min CGPA Required:</strong> ${internship.minCGPA || 'None'}</p>
+                                </div>
+                                
+                                <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                        <i class="fas fa-cogs"></i> Requirements
+                                    </h3>
+                                    ${internship.branchPreference && internship.branchPreference.length > 0 ? `
+                                        <p><strong>Branch Preferences:</strong> ${internship.branchPreference.join(', ')}</p>
+                                    ` : ''}
+                                    ${internship.requiredSkills && internship.requiredSkills.length > 0 ? `
+                                        <div style="margin-top: 0.5rem;">
+                                            <strong>Required Skills:</strong>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem;">
+                                                ${internship.requiredSkills.map(skill => 
+                                                    `<span style="background: #667eea; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem;">${skill}</span>`
+                                                ).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px; margin-bottom: 2rem;">
+                                <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                    <i class="fas fa-align-left"></i> Description
+                                </h3>
+                                <p>${internship.description}</p>
+                            </div>
+                            
+                            <!-- Requirements & Benefits -->
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                                ${internship.requirements ? `
+                                    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                        <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                            <i class="fas fa-list"></i> Additional Requirements
+                                        </h3>
+                                        <p>${internship.requirements}</p>
+                                    </div>
+                                ` : ''}
+                                
+                                ${internship.benefits && internship.benefits.length > 0 ? `
+                                    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px;">
+                                        <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">
+                                            <i class="fas fa-gift"></i> Benefits
+                                        </h3>
+                                        <ul style="padding-left: 1.5rem;">
+                                            ${internship.benefits.map(benefit => `<li>${benefit}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div style="display: flex; gap: 1rem; padding-top: 1rem; border-top: 2px solid #f3f4f6;">
+                                <button onclick="toggleInternshipStatus('${internship._id}', ${internship.isActive}); this.closest('.modal-overlay').remove();" class="btn ${internship.isActive ? 'btn-warning' : 'btn-success'}" style="flex: 1; padding: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <i class="fas fa-${internship.isActive ? 'pause' : 'play'}"></i>
+                                    ${internship.isActive ? 'Deactivate Internship' : 'Activate Internship'}
+                                </button>
+                                <button onclick="deleteInternship('${internship._id}'); this.closest('.modal-overlay').remove();" class="btn btn-danger" style="flex: 1; padding: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <i class="fas fa-trash"></i>
+                                    Delete Internship
+                                </button>
+                                <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-outline" style="padding: 1rem 1.5rem;">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        async function toggleInternshipStatus(internshipId, isActive) {
+            try {
+                showLoading();
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const newStatus = !isActive;
+                
+                const response = await fetch(`/api/admin/internships/${internshipId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ isActive: newStatus })
+                });
+
+                if (response.ok) {
+                    showMessage(`Internship ${newStatus ? 'activated' : 'deactivated'} successfully!`, 'success');
+                    // Refresh the internship list
+                    await loadInternships();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to update internship status', 'error');
+                }
+            } catch (error) {
+                console.error('Update internship status error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteInternship(internshipId) {
+            const confirmed = confirm('Are you sure you want to permanently delete this internship? This action cannot be undone.');
+            if (!confirmed) return;
+
+            try {
+                showLoading();
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+                const response = await fetch(`/api/admin/internships/${internshipId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    showMessage('Internship deleted successfully!', 'success');
+                    // Refresh the internships list
+                    await loadInternships();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to delete internship', 'error');
+                }
+            } catch (error) {
+                console.error('Delete internship error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function filterLogs() {
+            // Filter logs based on selected criteria
+            showMessage('Log filtering feature coming soon!', 'info');
+        }
+
+        function exportLogs() {
+            showMessage('Export logs feature coming soon!', 'info');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
