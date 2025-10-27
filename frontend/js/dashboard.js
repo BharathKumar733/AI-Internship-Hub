@@ -33,9 +33,10 @@ class DashboardManager {
     }
 
     setupSocketIO() {
-        // Initialize Socket.IO connection
+        // Initialize Socket.IO connection - Connect to the backend server where Socket.IO is running
         if (typeof io !== 'undefined') {
-            this.socket = io();
+            // Connect to the backend server where Socket.IO is running
+            this.socket = io('https://ai-internship-hub-backend.onrender.com');
             
             this.socket.on('connect', () => {
                 console.log('🔌 Connected to real-time server');
@@ -1372,7 +1373,120 @@ function logout() {
     }
 }
 
+// Add the updateProfileForm function as requested
+// In profile update form: send PUT request to correct endpoint with proper data
+// Include name, skills (split by commas), and interests (split by commas) in JSON body
+// After success, show "Profile updated successfully!" alert
+async function updateProfileForm() {
+  try {
+    // Get student ID from localStorage
+    const studentId = localStorage.getItem('studentId');
+    if (!studentId) {
+      alert("Please log in again to update your profile.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    // Get form data
+    const name = document.getElementById('name').value;
+    const skills = document.getElementById('skills').value;
+    const interests = document.getElementById('interests').value;
+    
+    // Prepare data - split skills and interests by commas
+    const data = {
+      name: name,
+      skills: skills ? skills.split(',').map(s => s.trim()).filter(s => s) : [],
+      interests: interests ? interests.split(',').map(i => i.trim()).filter(i => i) : []
+    };
+
+    // Send PUT request to: https://ai-internship-hub-backend.onrender.com/api/students/${studentId}
+    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/students/${studentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      // After success, show "Profile updated successfully!" alert
+      alert("Profile updated successfully!");
+      // Refresh recommendations after profile update
+      refreshRecommendations();
+    } else {
+      alert(result.message || "Failed to update profile.");
+    }
+  } catch (error) {
+    console.error('Update profile error:', error);
+    alert("Network error. Please try again.");
+  }
+}
+
+// Add the refreshRecommendations function as requested
+// In frontend: ensure refreshRecommendations() sends GET request to correct endpoint
+// Before calling it, check localStorage for studentId; if missing, redirect to login
+// Render internship cards correctly if data is returned
+async function refreshRecommendations() {
+  // Check localStorage for studentId; if missing, redirect to login
+  const studentId = localStorage.getItem('studentId') || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
+  
+  if (!studentId) {
+    console.error("Student ID not found in localStorage");
+    alert("Please log in again to view your recommendations.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const recommendationsContainer = document.getElementById('recommendationsGrid');
+  
+  if (recommendationsContainer) {
+    recommendationsContainer.innerHTML = '<p>Fetching recommendations...</p>';
+  }
+
+  try {
+    // Send GET request to: https://ai-internship-hub-backend.onrender.com/api/recommendations/${studentId}
+    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/recommendations/${studentId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch recommendations: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Render internship cards correctly if data is returned
+    if (!data || data.length === 0) {
+      if (recommendationsContainer) {
+        recommendationsContainer.innerHTML = '<p>No suitable recommendations found. Try updating your skills or interests!</p>';
+      }
+      return;
+    }
+
+    if (recommendationsContainer) {
+      recommendationsContainer.innerHTML = data.map(internship => `
+        <div class="internship-card">
+          <h3>${internship.title}</h3>
+          <p><strong>Company:</strong> ${internship.company?.name || 'N/A'}</p>
+          <p><strong>Match:</strong> ${internship.matchPercentage || 0}%</p>
+          <p><strong>Location:</strong> ${internship.company?.location || 'N/A'}</p>
+          <p><strong>Required Skills:</strong> ${internship.requiredSkills ? internship.requiredSkills.join(', ') : 'N/A'}</p>
+          <p>${internship.description ? internship.description.slice(0, 120) + '...' : 'No description available'}</p>
+          <button onclick="applyForInternship('${internship._id}')">Apply Now</button>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('Error loading recommendations:', err);
+    if (recommendationsContainer) {
+      recommendationsContainer.innerHTML = `<p>Error fetching recommendations: ${err.message}. Please try again later.</p>`;
+    }
+  }
+}
+
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboardManager = new DashboardManager();
+    // Call refreshRecommendations when the page loads
+    refreshRecommendations();
 });

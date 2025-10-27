@@ -13,8 +13,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
+    origin: ["https://ai-internship-hub-frontend.netlify.app", "http://localhost:3000"],
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 const PORT = process.env.PORT || 3000;
@@ -32,13 +33,18 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "data:"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "http://localhost:3000", "ws://localhost:3000"],
+      connectSrc: ["'self'", "https://ai-internship-hub-frontend.netlify.app", "http://localhost:3000", "ws://localhost:3000"],
       objectSrc: ["'none'"],
       frameSrc: ["'none'"]
     }
   }
 }));
-app.use(cors());
+
+// CORS configuration - Backend must configure CORS to explicitly allow requests from https://ai-internship-hub-frontend.netlify.app
+app.use(cors({
+  origin: ["https://ai-internship-hub-frontend.netlify.app", "http://localhost:3000"],
+  credentials: true
+}));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -94,6 +100,7 @@ app.use('/api/student', require('./routes/studentRoutes'));
 app.use('/api/company', require('./routes/companyRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/internships', require('./routes/internshipRoutes'));
+app.use('/api/recommendations', require('./routes/recommendations'));
 
 // Serve HTML pages
 app.get('/', (req, res) => {
