@@ -2,18 +2,25 @@ const nodemailer = require('nodemailer');
 
 class EmailService {
   constructor() {
-    console.log('Initializing EmailService');
-    console.log('EMAIL_USER:', process.env.EMAIL_USER);
-    console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '****' : 'NOT SET');
-    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Initializing EmailService with SendGrid SMTP');
     
-    // Create transporter with Gmail or any SMTP service
-    // Try multiple configuration options for better compatibility
+    // Check if SENDGRID_API_KEY is available
+    if (!process.env.SENDGRID_API_KEY) {
+      console.error('❌ SENDGRID_API_KEY is missing. Email service will not work.');
+      this.transporter = null;
+      return;
+    }
+    
+    console.log('SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? '****' : 'NOT SET');
+    
+    // Create transporter with SendGrid SMTP
     const emailConfig = {
-      service: 'gmail',
+      host: "smtp.sendgrid.net",
+      port: 587,
+      secure: false, // true for 465, false for other ports
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: "apikey",
+        pass: process.env.SENDGRID_API_KEY
       },
       // Add timeout and security options for better reliability
       tls: {
@@ -25,54 +32,14 @@ class EmailService {
       socketTimeout: 30000
     };
     
-    // If we're in production/render environment, try alternative configuration
-    if (process.env.NODE_ENV === 'production') {
-      // Remove service and use direct SMTP configuration
-      delete emailConfig.service;
-      emailConfig.host = 'smtp.gmail.com';
-      emailConfig.port = 587;
-      emailConfig.secure = false; // true for 465, false for other ports
-      emailConfig.requireTLS = true;
-    }
-    
     this.transporter = nodemailer.createTransport(emailConfig);
     
     // Verify transporter configuration
     this.transporter.verify((error, success) => {
       if (error) {
-        console.error('❌ Email transporter configuration error:', error);
-        // Try alternative configuration for Render
-        if (process.env.NODE_ENV === 'production') {
-          console.log('Trying alternative email configuration for production environment...');
-          const alternativeConfig = {
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-              user: process.env.EMAIL_USER,
-              pass: process.env.EMAIL_PASS
-            },
-            tls: {
-              rejectUnauthorized: false
-            },
-            connectionTimeout: 30000,
-            greetingTimeout: 30000,
-            socketTimeout: 30000
-          };
-          
-          this.transporter = nodemailer.createTransport(alternativeConfig);
-          
-          this.transporter.verify((altError, altSuccess) => {
-            if (altError) {
-              console.error('❌ Alternative email transporter also failed:', altError);
-              console.log('⚠️ Email service may not work in production. Consider using a dedicated email service like SendGrid.');
-            } else {
-              console.log('✅ Alternative email transporter is ready to send messages');
-            }
-          });
-        }
+        console.error('❌ SendGrid Email transporter configuration error:', error);
       } else {
-        console.log('✅ Email transporter is ready to send messages');
+        console.log('✅ SendGrid Email transporter is ready to send messages');
       }
     });
   }
@@ -85,9 +52,15 @@ class EmailService {
   // Send OTP email
   async sendOTP(email, otp, name) {
     try {
+      // Check if transporter is available
+      if (!this.transporter) {
+        console.error('❌ Email transporter not initialized. Cannot send OTP email.');
+        return false;
+      }
+      
       console.log('Sending OTP email to:', email);
       const mailOptions = {
-        from: `"AI Internship Hub" <${process.env.EMAIL_USER}>`,
+        from: `"AI Internship Hub" <${process.env.EMAIL_FROM || 'noreply@internshiphub.com'}>`,
         to: email,
         subject: 'Verify Your Email - OTP Code',
         html: `
@@ -242,10 +215,16 @@ class EmailService {
   // Send welcome email after successful registration
   async sendWelcomeEmail(email, name, role) {
     try {
+      // Check if transporter is available
+      if (!this.transporter) {
+        console.error('❌ Email transporter not initialized. Cannot send welcome email.');
+        return;
+      }
+      
       const roleDisplay = role === 'student' ? 'Student' : 'Company';
       
       const mailOptions = {
-        from: `"AI Internship Hub" <${process.env.EMAIL_USER}>`,
+        from: `"AI Internship Hub" <${process.env.EMAIL_FROM || 'noreply@internshiphub.com'}>`,
         to: email,
         subject: `Welcome to AI Internship Hub! 🎉`,
         html: `
