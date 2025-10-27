@@ -58,130 +58,7 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Get student profile by ID (for /api/students/:studentId)
-router.get('/:studentId', async (req, res) => {
-  try {
-    const { studentId } = req.params;
-    
-    // Validate student ID
-    if (!studentId) {
-      return res.status(400).json({ error: 'Student ID is required' });
-    }
-    
-    // Find student by ID
-    const student = await Student.findById(studentId);
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
-    }
-    
-    // Return student data
-    res.json(student.getPublicProfile());
-  } catch (error) {
-    console.error('Error fetching student profile:', error);
-    res.status(500).json({ error: 'Failed to fetch student profile' });
-  }
-});
-
-// Update student skills only (for /api/students/:studentId/skills)
-router.put('/:studentId/skills', async (req, res) => {
-  try {
-    const { studentId } = req.params;
-    const { skills } = req.body;
-    
-    // Validate student ID
-    if (!studentId) {
-      return res.status(400).json({ error: 'Student ID is required' });
-    }
-    
-    // Find student by ID
-    const student = await Student.findById(studentId);
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
-    }
-    
-    // Update skills only
-    if (skills) {
-      student.skills = Array.isArray(skills) ? skills : skills.split(',').map(s => s.trim()).filter(s => s);
-    }
-    
-    // Save updated student
-    await student.save();
-    
-    // Return success response
-    res.json({ 
-      success: true, 
-      message: 'Skills updated successfully!',
-      student: student.getPublicProfile() 
-    });
-  } catch (error) {
-    console.error('Error updating student skills:', error);
-    res.status(500).json({ error: 'Failed to update student skills' });
-  }
-});
-
-// Upload resume only (for /api/students/:studentId/resume)
-router.post('/:studentId/resume', upload.single('resume'), async (req, res) => {
-  try {
-    const { studentId } = req.params;
-    
-    // Validate student ID
-    if (!studentId) {
-      return res.status(400).json({ error: 'Student ID is required' });
-    }
-    
-    // Find student by ID
-    const student = await Student.findById(studentId);
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
-    }
-    
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    // Determine file type
-    const fileExt = path.extname(req.file.originalname).toLowerCase();
-    const fileType = fileExt === '.pdf' ? 'pdf' : 'docx';
-
-    // Analyze resume
-    const analysis = await aiAnalyzer.analyzeResume(req.file.path, fileType);
-
-    // Update student with extracted information
-    student.resumePath = req.file.path;
-    student.skills = analysis.skills;
-    student.branch = analysis.branch || student.branch;
-    student.profileCompleted = true;
-
-    await student.save();
-
-    // Log activity
-    await ActivityLog.logActivity({
-      user: student._id,
-      userModel: 'Student',
-      action: 'upload_resume',
-      details: `Resume analyzed: ${analysis.skills.length} skills extracted`,
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      metadata: { skillsCount: analysis.skills.length, confidence: analysis.confidence }
-    });
-
-    res.json({
-      message: 'Resume uploaded and analyzed successfully',
-      analysis: {
-        skills: analysis.skills,
-        education: analysis.education,
-        branch: analysis.branch,
-        confidence: analysis.confidence
-      },
-      student: student.getPublicProfile()
-    });
-  } catch (error) {
-    console.error('Error uploading student resume:', error);
-    res.status(500).json({ error: 'Failed to upload student resume' });
-  }
-});
-
-// Get student profile (for /api/student/profile)
+// Get student profile
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const student = await Student.findById(req.user.id);
@@ -198,7 +75,7 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Update student profile (for /api/student/profile)
+// Update student profile
 router.put('/profile', verifyToken, async (req, res) => {
   try {
     const { name, cgpa, branch, interests } = req.body;
@@ -236,7 +113,7 @@ router.put('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Add route for /api/student/:studentId to match frontend requirements
+// Add route for /api/students/:studentId to match frontend requirements
 // Make sure it finds the student by ID and updates name, skills, and interests
 // Return proper JSON array of internships instead of empty data
 router.put('/:studentId', async (req, res) => {
@@ -275,7 +152,7 @@ router.put('/:studentId', async (req, res) => {
   }
 });
 
-// Upload resume and analyze (for /api/student/upload-resume)
+// Upload resume and analyze
 router.post('/upload-resume', verifyToken, upload.single('resume'), async (req, res) => {
   try {
     if (!req.file) {

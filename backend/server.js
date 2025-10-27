@@ -98,7 +98,10 @@ app.get('/api/test', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/student', require('./routes/studentRoutes'));
-app.use('/api/students', require('./routes/studentRoutes'));
+app.use('/api/company', require('./routes/companyRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/internships', require('./routes/internshipRoutes'));
+app.use('/api/recommendations', require('./routes/recommendations'));
 
 // Serve HTML pages
 app.get('/', (req, res) => {
