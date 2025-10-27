@@ -33,7 +33,7 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "data:"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", process.env.FRONTEND_URL || "https://ai-internship-hub-frontend.netlify.app", "http://localhost:3000", "ws://localhost:3000"],
+      connectSrc: ["'self'", process.env.FRONTEND_URL || "https://ai-internship-hub-frontend.netlify.app", "http://localhost:5173", "ws://localhost:3000"],
       objectSrc: ["'none'"],
       frameSrc: ["'none'"]
     }
@@ -42,7 +42,8 @@ app.use(helmet({
 
 // CORS configuration - Backend must configure CORS to explicitly allow requests from https://ai-internship-hub-frontend.netlify.app
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || "https://ai-internship-hub-frontend.netlify.app", "http://localhost:3000"],
+  origin: [process.env.FRONTEND_URL || "https://ai-internship-hub-frontend.netlify.app", "http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
   optionsSuccessStatus: 200
 }));
@@ -97,7 +98,7 @@ app.get('/api/test', (req, res) => {
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/student', require('./routes/studentRoutes'));
+app.use('/api/students', require('./routes/studentRoutes'));
 app.use('/api/company', require('./routes/companyRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/internships', require('./routes/internshipRoutes'));

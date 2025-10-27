@@ -1377,50 +1377,40 @@ function logout() {
 // In profile update form: send PUT request to correct endpoint with proper data
 // Include name, skills (split by commas), and interests (split by commas) in JSON body
 // After success, show "Profile updated successfully!" alert
-async function updateProfileForm() {
+async function updateProfileForm(event) {
+  event.preventDefault();
+  const studentId = localStorage.getItem("studentId");
+
+  if (!studentId) {
+    alert("Student ID not found. Please log in again.");
+    return;
+  }
+
+  const formData = {
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    skills: document.getElementById("skills").value.split(",").map(s => s.trim()),
+    interests: document.getElementById("interests").value.split(",").map(i => i.trim()),
+  };
+
   try {
-    // Get student ID from localStorage
-    const studentId = localStorage.getItem('studentId');
-    if (!studentId) {
-      alert("Please log in again to update your profile.");
-      window.location.href = "login.html";
-      return;
-    }
-
-    // Get form data
-    const name = document.getElementById('name').value;
-    const skills = document.getElementById('skills').value;
-    const interests = document.getElementById('interests').value;
-    
-    // Prepare data - split skills and interests by commas
-    const data = {
-      name: name,
-      skills: skills ? skills.split(',').map(s => s.trim()).filter(s => s) : [],
-      interests: interests ? interests.split(',').map(i => i.trim()).filter(i => i) : []
-    };
-
-    // Send PUT request to: https://ai-internship-hub-backend.onrender.com/api/student/${studentId}
-    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/student/${studentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
+    const res = await fetch(`https://ai-internship-hub-backend.onrender.com/api/students/${studentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
     });
 
-    const result = await response.json();
+    const data = await res.json();
 
-    if (response.ok) {
-      // After success, show "Profile updated successfully!" alert
-      alert("Profile updated successfully!");
-      // Refresh recommendations after profile update
-      refreshRecommendations();
-    } else {
-      alert(result.message || "Failed to update profile.");
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to update profile");
     }
-  } catch (error) {
-    console.error('Update profile error:', error);
-    alert("Network error. Please try again.");
+
+    alert("Profile updated successfully!");
+    console.log("Updated profile:", data.student);
+  } catch (err) {
+    console.error("Update profile error:", err);
+    alert("Error updating profile. Please try again.");
   }
 }
 
