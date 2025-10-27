@@ -1399,8 +1399,8 @@ async function updateProfileForm() {
       interests: interests ? interests.split(',').map(i => i.trim()).filter(i => i) : []
     };
 
-    // Send PUT request to: https://ai-internship-hub-backend.onrender.com/api/students/${studentId}
-    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/students/${studentId}`, {
+    // Send PUT request to: https://ai-internship-hub-backend.onrender.com/api/student/${studentId}
+    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/student/${studentId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

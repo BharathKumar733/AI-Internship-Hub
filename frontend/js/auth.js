@@ -345,11 +345,19 @@ class AuthManager {
                     // Store in localStorage for persistent login
                     localStorage.setItem('token', result.token);
                     localStorage.setItem('user', JSON.stringify(result.user));
+                    // Store studentId separately for easier access
+                    if (result.user._id) {
+                        localStorage.setItem('studentId', result.user._id);
+                    }
                     localStorage.setItem('rememberMe', 'true');
                 } else {
                     // Store in sessionStorage for session-only login
                     sessionStorage.setItem('token', result.token);
                     sessionStorage.setItem('user', JSON.stringify(result.user));
+                    // Store studentId separately for easier access
+                    if (result.user._id) {
+                        localStorage.setItem('studentId', result.user._id);
+                    }
                     localStorage.removeItem('rememberMe'); // Remove rememberMe flag if it exists
                 }
                 
@@ -535,6 +543,10 @@ class AuthManager {
                 // Store token and user data
                 localStorage.setItem('token', result.token);
                 localStorage.setItem('user', JSON.stringify(result.user));
+                // Store studentId separately for easier access
+                if (result.user._id) {
+                    localStorage.setItem('studentId', result.user._id);
+                }
                 
                 this.showSuccess('Registration successful! Welcome to AI Internship Hub.');
                 
