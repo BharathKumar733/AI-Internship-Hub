@@ -129,6 +129,44 @@ router.put('/update/:id', async (req, res) => {
   }
 });
 
+// 3️⃣ Add route for /api/students/:studentId to match frontend requirements
+// Make sure it finds the student by ID and updates name, skills, and interests
+router.put('/:studentId', async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { name, skills, interests } = req.body;
+    
+    // Validate student ID
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find student by ID
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Update fields
+    if (name) student.name = name;
+    if (skills) student.skills = Array.isArray(skills) ? skills : skills.split(',').map(s => s.trim()).filter(s => s);
+    if (interests) student.interests = Array.isArray(interests) ? interests : interests.split(',').map(i => i.trim()).filter(i => i);
+    
+    // Save updated student
+    await student.save();
+    
+    // Return success response with "Profile updated successfully!" message
+    res.json({ 
+      success: true, 
+      message: 'Profile updated successfully!',
+      student: student.getPublicProfile() 
+    });
+  } catch (error) {
+    console.error('Error updating student profile:', error);
+    res.status(500).json({ error: 'Failed to update student profile' });
+  }
+});
+
 // Upload resume and analyze
 router.post('/upload-resume', verifyToken, upload.single('resume'), async (req, res) => {
   try {

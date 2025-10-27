@@ -107,6 +107,9 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/internships', require('./routes/internshipRoutes'));
 app.use('/api/recommendations', require('./routes/recommendations'));
 
+// 2️⃣ Add route for /api/students/:studentId to match frontend requirements
+app.use('/api/students', require('./routes/studentRoutes'));
+
 // Serve HTML pages - Add proper route handling for student.html and other pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend', 'index.html'));

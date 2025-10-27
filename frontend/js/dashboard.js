@@ -1366,12 +1366,64 @@ function updateProfile() {
     }
 }
 
+// 2️⃣ In profile update form (updateProfile.js): Create function to handle profile updates
+// Send PUT request to: https://ai-internship-hub-backend.onrender.com/api/students/${studentId}
+// Include name, skills (split by commas), and interests (split by commas) in JSON body
+// After success, show "Profile updated successfully!" alert
+async function updateProfileForm() {
+  try {
+    // Get student ID from localStorage
+    const studentId = localStorage.getItem('studentId');
+    if (!studentId) {
+      alert("Please log in again to update your profile.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    // Get form data
+    const name = document.getElementById('name').value;
+    const skills = document.getElementById('skills').value;
+    const interests = document.getElementById('interests').value;
+    
+    // Prepare data - split skills and interests by commas
+    const data = {
+      name: name,
+      skills: skills ? skills.split(',').map(s => s.trim()).filter(s => s) : [],
+      interests: interests ? interests.split(',').map(i => i.trim()).filter(i => i) : []
+    };
+
+    // Send PUT request to: https://ai-internship-hub-backend.onrender.com/api/students/${studentId}
+    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/students/${studentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      // After success, show "Profile updated successfully!" alert
+      alert("Profile updated successfully!");
+      // Refresh recommendations after profile update
+      refreshRecommendations();
+    } else {
+      alert(result.message || "Failed to update profile.");
+    }
+  } catch (error) {
+    console.error('Update profile error:', error);
+    alert("Network error. Please try again.");
+  }
+}
+
 // Add the refreshRecommendations function as requested
 async function refreshRecommendations() {
+  // 1️⃣ In frontend: Ensure refreshRecommendations() sends GET request to correct endpoint
   const studentId = localStorage.getItem('studentId') || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
   const recommendationsContainer = document.getElementById('recommendations');
   
-  // Fix Student ID localStorage issue - Check if studentId exists
+  // Check localStorage for studentId; if missing, redirect to login
   if (!studentId) {
     console.error("Student ID not found in localStorage");
     if (recommendationsContainer) {
@@ -1388,11 +1440,13 @@ async function refreshRecommendations() {
   }
 
   try {
-    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/student/recommendations/${studentId}`);
+    // Send GET request to: https://ai-internship-hub-backend.onrender.com/api/recommendations/${studentId}
+    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/recommendations/${studentId}`);
     if (!response.ok) throw new Error('Failed to fetch recommendations');
 
     const data = await response.json();
 
+    // Render internship cards correctly if data is returned
     if (!data || data.length === 0) {
       if (recommendationsContainer) {
         recommendationsContainer.innerHTML = '<p>No suitable recommendations found. Try updating your skills or interests!</p>';
@@ -1405,7 +1459,7 @@ async function refreshRecommendations() {
         <div class="internship-card">
           <h3>${internship.title}</h3>
           <p><strong>Company:</strong> ${internship.company?.name || 'N/A'}</p>
-          <p><strong>Match:</strong> ${internship.matchPercentage}%</p>
+          <p><strong>Match:</strong> ${internship.matchPercentage || 0}%</p>
           <p><strong>Location:</strong> ${internship.company?.location || 'N/A'}</p>
           <p><strong>Required Skills:</strong> ${internship.requiredSkills ? internship.requiredSkills.join(', ') : 'N/A'}</p>
           <p>${internship.description ? internship.description.slice(0, 120) + '...' : 'No description available'}</p>

@@ -259,7 +259,13 @@
                                             <input type="number" id="cgpa" name="cgpa" min="0" max="10" step="0.01" required>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                                    <!-- Add skills field for profile update -->
+                                    <div class="form-group">
+                                        <label for="skills">Skills</label>
+                                        <input type="text" id="skills" name="skills" placeholder="JavaScript, Python, React">
+                                        <small>Separate multiple skills with commas</small>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm()">Update Profile</button>
                                 </form>
                             </div>
 
@@ -311,7 +317,7 @@
                                             <option value="6+ months">6+ months</option>
                                         </select>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Save Preferences</button>
+                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm()">Save Preferences</button>
                                 </form>
                             </div>
                         </div>
@@ -332,77 +338,14 @@
     </div>
 
     <script>
-        // Fix "refreshRecommendations is not defined" by defining a refreshRecommendations() function that:
-        // Calls `${backendURL}/api/recommendations/${studentId}`
-        // Updates the UI dynamically with recommended internships
-        // Use full backend URL (https://ai-internship-hub-backend.onrender.com/api/recommendations/...) for API requests
-        async function refreshRecommendations() {
-          // Get student ID from localStorage or dashboard manager
-          const studentId = localStorage.getItem('studentId') || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
-          const recommendationsContainer = document.getElementById('recommendations');
-          
-          if (!studentId) {
-            console.error("Student ID not found in localStorage");
-            if (recommendationsContainer) {
-              recommendationsContainer.innerHTML = '<p>Error: Student ID not found. Please log in again.</p>';
-            }
-            return;
-          }
-
-          if (recommendationsContainer) {
-            recommendationsContainer.innerHTML = '<p>Fetching recommendations...</p>';
-          }
-
-          try {
-            // Use full backend URL for API requests
-            const backendURL = 'https://ai-internship-hub-backend.onrender.com';
-            const response = await fetch(`${backendURL}/api/recommendations/${studentId}`);
-            
-            if (!response.ok) {
-              throw new Error(`Failed to fetch recommendations: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json();
-
-            if (!data || data.length === 0) {
-              if (recommendationsContainer) {
-                recommendationsContainer.innerHTML = '<p>No suitable recommendations found. Try updating your skills or interests!</p>';
-              }
-              return;
-            }
-
-            if (recommendationsContainer) {
-              recommendationsContainer.innerHTML = data.map(internship => `
-                <div class="internship-card">
-                  <h3>${internship.title}</h3>
-                  <p><strong>Company:</strong> ${internship.company?.name || 'N/A'}</p>
-                  <p><strong>Match:</strong> ${internship.matchPercentage || 0}%</p>
-                  <p><strong>Location:</strong> ${internship.company?.location || 'N/A'}</p>
-                  <p><strong>Required Skills:</strong> ${internship.requiredSkills ? internship.requiredSkills.join(', ') : 'N/A'}</p>
-                  <p>${internship.description ? internship.description.slice(0, 120) + '...' : 'No description available'}</p>
-                  <button onclick="applyForInternship('${internship._id}')">Apply Now</button>
-                </div>
-              `).join('');
-            }
-          } catch (err) {
-            console.error('Error loading recommendations:', err);
-            if (recommendationsContainer) {
-              recommendationsContainer.innerHTML = `<p>Error fetching recommendations: ${err.message}. Please try again later.</p>`;
-            }
-          }
-        }
-
-        // Add applyForInternship function
-        async function applyForInternship(internshipId) {
-          // This would need to be implemented based on your application logic
-          alert(`Applying for internship ${internshipId}`);
-        }
-
         // Call refreshRecommendations when the page loads
         document.addEventListener('DOMContentLoaded', function() {
           // Only call if we're on the recommendations section
           if (document.getElementById('recommendations') && document.getElementById('recommendations').offsetParent !== null) {
-            refreshRecommendations();
+            // Use the refreshRecommendations function from dashboard.js
+            if (typeof refreshRecommendations === 'function') {
+              refreshRecommendations();
+            }
           }
         });
     </script>

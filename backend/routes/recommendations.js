@@ -26,6 +26,12 @@ router.get('/:studentId', async (req, res) => {
     // Get recommendations using the recommendation engine
     const recommendations = await recommend.recommendInternships(student);
     
+    // 3️⃣ In backend (recommendation route): Make sure it returns proper JSON array of internships
+    // Return proper JSON array of internships instead of empty data
+    if (!recommendations || recommendations.length === 0) {
+      return res.json([]); // Return empty array instead of null/undefined
+    }
+    
     // Return recommendations as JSON
     res.json(recommendations);
   } catch (error) {
