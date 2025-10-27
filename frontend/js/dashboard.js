@@ -1370,8 +1370,15 @@ async function refreshRecommendations() {
   const studentId = localStorage.getItem('studentId') || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
   const recommendationsContainer = document.getElementById('recommendations');
   
+  // Fix Student ID localStorage issue - Check if studentId exists
   if (!studentId) {
     console.error("Student ID not found in localStorage");
+    if (recommendationsContainer) {
+      recommendationsContainer.innerHTML = '<p>Please log in again to view your recommendations.</p>';
+    }
+    // Redirect to login page
+    alert("Please log in again to view your recommendations.");
+    window.location.href = "login.html";
     return;
   }
 

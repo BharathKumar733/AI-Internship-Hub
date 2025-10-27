@@ -346,11 +346,25 @@ class AuthManager {
                     localStorage.setItem('token', result.token);
                     localStorage.setItem('user', JSON.stringify(result.user));
                     localStorage.setItem('rememberMe', 'true');
+                    // Fix Student ID localStorage issue - Save studentId and studentName
+                    if (result.user._id) {
+                        localStorage.setItem('studentId', result.user._id);
+                    }
+                    if (result.user.name) {
+                        localStorage.setItem('studentName', result.user.name);
+                    }
                 } else {
                     // Store in sessionStorage for session-only login
                     sessionStorage.setItem('token', result.token);
                     sessionStorage.setItem('user', JSON.stringify(result.user));
                     localStorage.removeItem('rememberMe'); // Remove rememberMe flag if it exists
+                    // Fix Student ID localStorage issue - Save studentId and studentName
+                    if (result.user._id) {
+                        localStorage.setItem('studentId', result.user._id);
+                    }
+                    if (result.user.name) {
+                        localStorage.setItem('studentName', result.user.name);
+                    }
                 }
                 
                 this.showSuccess('Login successful! Redirecting...');
