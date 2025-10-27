@@ -229,7 +229,7 @@
                         <div class="profile-tab-content">
                             <!-- Personal Info Tab -->
                             <div class="tab-pane active" id="personalTab">
-                                <form class="profile-form" id="personalForm">
+                                <form class="profile-form" id="personalForm" onsubmit="event.preventDefault(); updateProfileForm(event);">
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label for="name">Full Name</label>
@@ -265,7 +265,7 @@
                                         <small>Separate multiple skills with commas</small>
                                     </div>
                                     <!-- Update button to use the new updateProfileForm function -->
-                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm()">Update Profile</button>
+                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm(event)">Update Profile</button>
                                 </form>
                             </div>
 
@@ -299,7 +299,7 @@
 
                             <!-- Preferences Tab -->
                             <div class="tab-pane" id="preferencesTab">
-                                <form class="profile-form" id="preferencesForm">
+                                <form class="profile-form" id="preferencesForm" onsubmit="event.preventDefault(); updateProfileForm(event);">
                                     <div class="form-group">
                                         <label for="interests">Interests</label>
                                         <input type="text" id="interests" name="interests" placeholder="Web Development, Data Science, AI">
@@ -318,7 +318,7 @@
                                         </select>
                                     </div>
                                     <!-- Update button to use the new updateProfileForm function -->
-                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm()">Save Preferences</button>
+                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm(event)">Save Preferences</button>
                                 </form>
                             </div>
                         </div>

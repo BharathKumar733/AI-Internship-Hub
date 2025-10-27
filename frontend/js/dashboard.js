@@ -1378,14 +1378,138 @@ function logout() {
 // Include name, skills (split by commas), and interests (split by commas) in JSON body
 // After success, show "Profile updated successfully!" alert
 async function updateProfileForm(event) {
-  // This is the original simple implementation that was causing the error
-  // We'll keep it simple but fix the preventDefault issue
+  // Prevent default form submission if event is provided
   if (event && event.preventDefault) {
     event.preventDefault();
   }
   
-  // Add a simple alert to indicate the function is called
-  alert("Profile update functionality needs to be implemented.");
+  try {
+    // Show loading indicator
+    if (window.dashboardManager) {
+      window.dashboardManager.showLoading();
+    }
+    
+    // Determine which tab is active to get the correct form data
+    const personalTab = document.getElementById('personalTab');
+    const preferencesTab = document.getElementById('preferencesTab');
+    
+    let data = {};
+    let url = 'https://ai-internship-hub-backend.onrender.com/api/student/profile';
+    
+    // Check which tab is active by looking at the display style or class
+    if (personalTab && personalTab.classList.contains('active')) {
+      // Get data from personal info form
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const branch = document.getElementById('branch').value;
+      const cgpa = document.getElementById('cgpa').value;
+      const skills = document.getElementById('skills').value;
+      
+      data = {
+        name: name,
+        email: email,
+        branch: branch,
+        cgpa: parseFloat(cgpa) || 0,
+      };
+      
+      // Only add skills if they exist
+      if (skills) {
+        data.skills = skills.split(',').map(skill => skill.trim()).filter(skill => skill);
+      }
+    } else if (preferencesTab && preferencesTab.classList.contains('active')) {
+      // Get data from preferences form
+      const interests = document.getElementById('interests').value;
+      const preferredLocation = document.getElementById('preferredLocation').value;
+      const preferredDuration = document.getElementById('preferredDuration').value;
+      
+      data = {};
+      
+      // Only add fields that have values
+      if (interests) {
+        data.interests = interests.split(',').map(interest => interest.trim()).filter(interest => interest);
+      }
+      if (preferredLocation) {
+        data.preferredLocation = preferredLocation;
+      }
+      if (preferredDuration) {
+        data.preferredDuration = preferredDuration;
+      }
+    }
+    
+    // Get token from localStorage or sessionStorage
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('Authentication token not found. Please log in again.');
+    }
+    
+    // Send PUT request to update profile
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (window.dashboardManager) {
+      window.dashboardManager.hideLoading();
+    }
+    
+    if (response.ok) {
+      // Show success message
+      alert("Profile updated successfully!");
+      
+      // Update local user data
+      if (result.student) {
+        const user = result.student;
+        localStorage.setItem('user', JSON.stringify(user));
+        if (window.dashboardManager) {
+          window.dashboardManager.user = user;
+        }
+        
+        // Update UI elements
+        const studentName = user.name || 'Student';
+        const studentNameEl = document.getElementById('studentName');
+        const userNameEl = document.getElementById('userName');
+        const profileNameEl = document.getElementById('profileName');
+        const profileEmailEl = document.getElementById('profileEmail');
+        const profileCGPAEl = document.getElementById('profileCGPA');
+        const profileBranchEl = document.getElementById('profileBranch');
+        
+        if (studentNameEl) studentNameEl.textContent = studentName;
+        if (userNameEl) userNameEl.textContent = studentName;
+        if (profileNameEl) profileNameEl.textContent = studentName;
+        if (profileEmailEl) profileEmailEl.textContent = user.email || 'student@email.com';
+        if (profileCGPAEl) profileCGPAEl.textContent = user.cgpa || 'N/A';
+        if (profileBranchEl) profileBranchEl.textContent = user.branch || 'N/A';
+        
+        // Also update form fields with new data
+        if (personalTab && personalTab.classList.contains('active')) {
+          document.getElementById('name').value = user.name || '';
+          document.getElementById('email').value = user.email || '';
+          document.getElementById('branch').value = user.branch || '';
+          document.getElementById('cgpa').value = user.cgpa || '';
+          document.getElementById('skills').value = user.skills ? user.skills.join(', ') : '';
+        } else if (preferencesTab && preferencesTab.classList.contains('active')) {
+          document.getElementById('interests').value = user.interests ? user.interests.join(', ') : '';
+          document.getElementById('preferredLocation').value = user.preferredLocation || '';
+          document.getElementById('preferredDuration').value = user.preferredDuration || '';
+        }
+      }
+    } else {
+      throw new Error(result.error || 'Failed to update profile');
+    }
+  } catch (error) {
+    if (window.dashboardManager) {
+      window.dashboardManager.hideLoading();
+    }
+    console.error('Profile update error:', error);
+    alert("Error updating profile: " + error.message);
+  }
 }
 
 // Add the refreshRecommendations function as requested
