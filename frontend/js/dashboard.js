@@ -1042,6 +1042,10 @@ class DashboardManager {
                 if (result.student) {
                     this.user = result.student;
                     localStorage.setItem('user', JSON.stringify(this.user));
+                    // Store studentId in localStorage for recommendations
+                    if (result.student._id) {
+                        localStorage.setItem('studentId', result.student._id);
+                    }
                 }
                 // Update UI
                 const studentName = result.student?.name || 'Student';
@@ -1049,6 +1053,9 @@ class DashboardManager {
                 const userNameEl = document.getElementById('userName');
                 if (studentNameEl) studentNameEl.textContent = studentName;
                 if (userNameEl) userNameEl.textContent = studentName;
+                
+                // Refresh recommendations after profile update
+                refreshRecommendations();
             } else {
                 this.showError(result.error || 'Failed to update profile');
             }
@@ -1358,6 +1365,61 @@ function updateProfile() {
     }
 }
 
+// Add the refreshRecommendations function as requested
+async function refreshRecommendations() {
+  const studentId = localStorage.getItem('studentId') || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
+  const recommendationsContainer = document.getElementById('recommendations');
+  
+  if (!studentId) {
+    console.error("Student ID not found in localStorage");
+    return;
+  }
+
+  if (recommendationsContainer) {
+    recommendationsContainer.innerHTML = '<p>Fetching recommendations...</p>';
+  }
+
+  try {
+    const response = await fetch(`https://ai-internship-hub-backend.onrender.com/api/student/recommendations/${studentId}`);
+    if (!response.ok) throw new Error('Failed to fetch recommendations');
+
+    const data = await response.json();
+
+    if (!data || data.length === 0) {
+      if (recommendationsContainer) {
+        recommendationsContainer.innerHTML = '<p>No suitable recommendations found. Try updating your skills or interests!</p>';
+      }
+      return;
+    }
+
+    if (recommendationsContainer) {
+      recommendationsContainer.innerHTML = data.map(internship => `
+        <div class="internship-card">
+          <h3>${internship.title}</h3>
+          <p><strong>Company:</strong> ${internship.company?.name || 'N/A'}</p>
+          <p><strong>Match:</strong> ${internship.matchPercentage}%</p>
+          <p><strong>Location:</strong> ${internship.company?.location || 'N/A'}</p>
+          <p><strong>Required Skills:</strong> ${internship.requiredSkills ? internship.requiredSkills.join(', ') : 'N/A'}</p>
+          <p>${internship.description ? internship.description.slice(0, 120) + '...' : 'No description available'}</p>
+          <button onclick="applyToInternship('${internship._id}')">Apply Now</button>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('Error loading recommendations:', err);
+    if (recommendationsContainer) {
+      recommendationsContainer.innerHTML = '<p>Error fetching recommendations. Please try again later.</p>';
+    }
+  }
+}
+
+// Add applyForInternship function
+function applyForInternship(internshipId) {
+  if (window.dashboardManager) {
+    window.dashboardManager.applyToInternship(internshipId);
+  }
+}
+
 // Global logout function to make it accessible from HTML onclick
 function logout() {
     if (window.dashboardManager) {
@@ -1375,4 +1437,6 @@ function logout() {
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboardManager = new DashboardManager();
+    // Call refreshRecommendations when the page loads
+    refreshRecommendations();
 });

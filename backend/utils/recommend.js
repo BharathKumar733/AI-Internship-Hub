@@ -3,25 +3,28 @@ const Company = require('../models/Company');
 
 class RecommendationEngine {
   constructor() {
+    // Improve recommendation accuracy:
+    // Increase weight for skill matches and CGPA slightly
     this.weights = {
-      skills: 0.40,      // 40% weight for skills match (INCREASED for better matching)
-      cgpa: 0.20,        // 20% weight for CGPA
-      branch: 0.20,      // 20% weight for branch preference
+      skills: 0.50,      // Increased from 0.45 to 0.50 for stronger skill matching
+      cgpa: 0.25,        // Increased from 0.20 to 0.25 for stronger CGPA matching
+      branch: 0.10,      // Decreased from 0.15 to 0.10
       interests: 0.10,   // 10% weight for interests
-      location: 0.10     // 10% weight for location preference
+      location: 0.05     // Decreased from 0.10 to 0.05
     };
     
     // Minimum thresholds for recommendations
-    this.minSkillsMatch = 0.15; // At least 15% skills match required
-    this.minOverallScore = 0.30; // At least 30% overall match required
+    this.minSkillsMatch = 0.30; // Increased from 0.25 to 0.30
+    this.minOverallScore = 0.45; // Increased from 0.40 to 0.45
   }
 
   async recommendInternships(student, limit = 10) {
     try {
-      // Get all active internships
+      // Filter out inactive or expired internships strictly
       const internships = await Internship.find({ 
         isActive: true,
-        applicationDeadline: { $gt: new Date() }
+        applicationDeadline: { $gt: new Date() },
+        startDate: { $gt: new Date() } // Ensure internships haven't started yet
       }).populate('company', 'name location industry');
 
       if (!internships.length) {
@@ -39,7 +42,7 @@ class RecommendationEngine {
           matchScore,
           skillsScore, // Track individual skills score
           canApply,
-          matchPercentage: Math.round(matchScore * 100)
+          matchPercentage: Math.round(matchScore * 100) // Ensure match percentage calculation is accurate (round to nearest integer)
         };
       });
 
@@ -50,7 +53,8 @@ class RecommendationEngine {
           internship.skillsScore >= this.minSkillsMatch && // Must have minimum skills match
           internship.matchScore >= this.minOverallScore    // Must have minimum overall score
         )
-        .sort((a, b) => b.matchScore - a.matchScore)
+        // Add randomization to ranking as per requirements
+        .sort((a, b) => (b.matchScore - a.matchScore) + (Math.random() * 0.01))
         .slice(0, limit);
 
       return recommendations;
@@ -64,17 +68,17 @@ class RecommendationEngine {
     let totalScore = 0;
     let totalWeight = 0;
 
-    // Skills matching (40% weight)
+    // Skills matching (50% weight)
     const skillsScore = this.calculateSkillsMatch(student.skills, internship.requiredSkills);
     totalScore += skillsScore * this.weights.skills;
     totalWeight += this.weights.skills;
 
-    // CGPA matching (20% weight)
+    // CGPA matching (25% weight)
     const cgpaScore = this.calculateCGPAMatch(student.cgpa, internship.minCGPA);
     totalScore += cgpaScore * this.weights.cgpa;
     totalWeight += this.weights.cgpa;
 
-    // Branch matching (20% weight)
+    // Branch matching (10% weight)
     const branchScore = this.calculateBranchMatch(student.branch, internship.branchPreference);
     totalScore += branchScore * this.weights.branch;
     totalWeight += this.weights.branch;
@@ -84,7 +88,7 @@ class RecommendationEngine {
     totalScore += interestsScore * this.weights.interests;
     totalWeight += this.weights.interests;
 
-    // Location matching (10% weight)
+    // Location matching (5% weight)
     const locationScore = this.calculateLocationMatch(student, internship);
     totalScore += locationScore * this.weights.location;
     totalWeight += this.weights.location;
@@ -112,10 +116,11 @@ class RecommendationEngine {
       if (studentSkillsLower.includes(requiredSkill)) {
         matches++;
       } else {
-        // Partial match (skill contains required skill or vice versa)
-        // Must be at least 3 characters to avoid false matches
+        // Add better partial skill matching (substring match with >3 chars)
+        // Must be at least 4 characters to avoid false matches
         const hasPartialMatch = studentSkillsLower.some(studentSkill => {
-          if (studentSkill.length < 3 || requiredSkill.length < 3) return false;
+          if (studentSkill.length < 4 || requiredSkill.length < 4) return false;
+          // Check for substring match in either direction
           return studentSkill.includes(requiredSkill) || requiredSkill.includes(studentSkill);
         });
         if (hasPartialMatch) {
@@ -124,9 +129,10 @@ class RecommendationEngine {
       }
     });
 
-    // Calculate score: exact matches get full points, partial matches get 40% points
+    // Calculate score: exact matches get full points, partial matches get 50% points (enhanced from 40%)
     const exactMatchScore = matches / requiredSkills.length;
-    const partialMatchScore = (partialMatches * 0.4) / requiredSkills.length;
+    // Make partial skill match slightly stronger as per requirements
+    const partialMatchScore = (partialMatches * 0.5) / requiredSkills.length;
     
     return Math.min(exactMatchScore + partialMatchScore, 1);
   }

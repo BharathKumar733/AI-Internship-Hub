@@ -75,10 +75,10 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Update student profile
+// Update student profile - Enhanced version
 router.put('/profile', verifyToken, async (req, res) => {
   try {
-    const { name, cgpa, branch, interests } = req.body;
+    const { name, cgpa, branch, interests, skills } = req.body;
     
     const student = await Student.findById(req.user.id);
     if (!student) {
@@ -89,7 +89,8 @@ router.put('/profile', verifyToken, async (req, res) => {
     if (name) student.name = name;
     if (cgpa !== undefined) student.cgpa = cgpa;
     if (branch) student.branch = branch;
-    if (interests) student.interests = interests;
+    if (interests) student.interests = Array.isArray(interests) ? interests : interests.split(',').map(i => i.trim());
+    if (skills) student.skills = Array.isArray(skills) ? skills : skills.split(',').map(s => s.trim());
 
     await student.save();
 
@@ -110,6 +111,21 @@ router.put('/profile', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// New route: Update student profile by ID (as requested in the prompt)
+router.put('/update/:id', async (req, res) => {
+  try {
+    const updatedStudent = await Student.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json({ success: true, student: updatedStudent });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ success: false, message: 'Failed to update profile' });
   }
 });
 
@@ -194,6 +210,20 @@ router.get('/recommendations', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Get recommendations error:', error);
     res.status(500).json({ error: 'Failed to get recommendations' });
+  }
+});
+
+// New route: Get recommendations by student ID (as requested in the prompt)
+router.get('/recommendations/:studentId', async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.studentId);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    const recommendations = await recommend.recommendInternships(student);
+    res.json(recommendations);
+  } catch (err) {
+    console.error('Recommendation error:', err);
+    res.status(500).json({ message: 'Error generating recommendations' });
   }
 });
 
