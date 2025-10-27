@@ -1359,6 +1359,146 @@ function updateProfile() {
     }
 }
 
+// New functions for the simplified profile system
+const API_URL = "https://ai-internship-hub-backend.onrender.com";
+
+async function loadStudentProfile() {
+    const studentId = localStorage.getItem("studentId") || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
+    if (!studentId) {
+        alert("Student ID not found. Please log in again.");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/api/students/${studentId}`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || "Failed to load profile");
+
+        // Display readonly fields
+        document.getElementById("name").value = data.name || "";
+        document.getElementById("email").value = data.email || "";
+        document.getElementById("branch").value = data.branch || "";
+        document.getElementById("cgpa").value = data.cgpa || "";
+        document.getElementById("interests").value = data.interests || "";
+        document.getElementById("skills").value = (data.skills || []).join(", ");
+        
+        // Update profile sidebar
+        document.getElementById("profileName").textContent = data.name || "Student";
+        document.getElementById("profileEmail").textContent = data.email || "student@email.com";
+        document.getElementById("profileCGPA").textContent = data.cgpa || "N/A";
+        document.getElementById("profileBranch").textContent = data.branch || "N/A";
+        
+        // Display skills in the skills list
+        const skillsList = document.getElementById("skillsList");
+        if (skillsList) {
+            if (data.skills && data.skills.length > 0) {
+                skillsList.innerHTML = data.skills.map(skill => 
+                    `<span class="skill-tag">${skill}</span>`
+                ).join('');
+            } else {
+                skillsList.innerHTML = '<p>No skills extracted yet. Upload your resume to get started!</p>';
+            }
+        }
+        
+        // Display resume info
+        const currentResume = document.getElementById('currentResume');
+        if (currentResume && data.resumePath) {
+            currentResume.style.display = 'block';
+        } else if (currentResume) {
+            currentResume.style.display = 'none';
+        }
+    } catch (err) {
+        console.error("Error loading profile:", err);
+        alert("Error loading profile. Please try again.");
+    }
+}
+
+async function updateSkills() {
+    const studentId = localStorage.getItem("studentId") || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
+    if (!studentId) {
+        alert("Student ID not found. Please log in again.");
+        return;
+    }
+    
+    const skillsInput = document.getElementById("skills").value;
+    const skills = skillsInput.split(",").map(s => s.trim()).filter(s => s);
+
+    try {
+        const res = await fetch(`${API_URL}/api/students/${studentId}/skills`, {
+            method: "PUT",
+            headers: { 
+                "Content-Type": "application/json",
+                // Add authorization header if available
+                ...(window.dashboardManager && window.dashboardManager.token ? {
+                    "Authorization": `Bearer ${window.dashboardManager.token}`
+                } : {})
+            },
+            body: JSON.stringify({ skills }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to update skills");
+        alert("Skills updated successfully!");
+        
+        // Reload profile to reflect changes
+        loadStudentProfile();
+    } catch (err) {
+        console.error("Error updating skills:", err);
+        alert("Error updating skills. Please try again.");
+    }
+}
+
+async function uploadResume() {
+    const studentId = localStorage.getItem("studentId") || (window.dashboardManager && window.dashboardManager.user && window.dashboardManager.user.id);
+    if (!studentId) {
+        alert("Student ID not found. Please log in again.");
+        return;
+    }
+    
+    const fileInput = document.getElementById("resumeFile");
+    const file = fileInput.files[0];
+    if (!file) return alert("Please select a file first");
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    try {
+        // Show loading
+        if (window.dashboardManager) {
+            window.dashboardManager.showLoading();
+        }
+        
+        const res = await fetch(`${API_URL}/api/students/${studentId}/resume`, {
+            method: "POST",
+            // Add authorization header if available
+            headers: {
+                ...(window.dashboardManager && window.dashboardManager.token ? {
+                    "Authorization": `Bearer ${window.dashboardManager.token}`
+                } : {})
+            },
+            body: formData,
+        });
+
+        const data = await res.json();
+        if (window.dashboardManager) {
+            window.dashboardManager.hideLoading();
+        }
+        
+        if (!res.ok) throw new Error(data.message || "Failed to upload resume");
+        alert("Resume uploaded successfully!");
+        
+        // Reload profile to reflect changes
+        loadStudentProfile();
+    } catch (err) {
+        if (window.dashboardManager) {
+            window.dashboardManager.hideLoading();
+        }
+        console.error("Error uploading resume:", err);
+        alert("Error uploading resume. Please try again.");
+    }
+}
+
 // Global logout function to make it accessible from HTML onclick
 function logout() {
     if (window.dashboardManager) {
@@ -1391,48 +1531,21 @@ async function updateProfileForm(event) {
     
     // Determine which tab is active to get the correct form data
     const personalTab = document.getElementById('personalTab');
-    const preferencesTab = document.getElementById('preferencesTab');
+    const skillsTab = document.getElementById('skillsTab');
     
     let data = {};
     let url = 'https://ai-internship-hub-backend.onrender.com/api/student/profile';
     
     // Check which tab is active by looking at the display style or class
-    if (personalTab && personalTab.classList.contains('active')) {
-      // Get data from personal info form
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const branch = document.getElementById('branch').value;
-      const cgpa = document.getElementById('cgpa').value;
+    if (skillsTab && skillsTab.classList.contains('active')) {
+      // Get data from skills form
       const skills = document.getElementById('skills').value;
       
-      data = {
-        name: name,
-        email: email,
-        branch: branch,
-        cgpa: parseFloat(cgpa) || 0,
-      };
+      data = {};
       
       // Only add skills if they exist
       if (skills) {
         data.skills = skills.split(',').map(skill => skill.trim()).filter(skill => skill);
-      }
-    } else if (preferencesTab && preferencesTab.classList.contains('active')) {
-      // Get data from preferences form
-      const interests = document.getElementById('interests').value;
-      const preferredLocation = document.getElementById('preferredLocation').value;
-      const preferredDuration = document.getElementById('preferredDuration').value;
-      
-      data = {};
-      
-      // Only add fields that have values
-      if (interests) {
-        data.interests = interests.split(',').map(interest => interest.trim()).filter(interest => interest);
-      }
-      if (preferredLocation) {
-        data.preferredLocation = preferredLocation;
-      }
-      if (preferredDuration) {
-        data.preferredDuration = preferredDuration;
       }
     }
     
@@ -1488,16 +1601,8 @@ async function updateProfileForm(event) {
         if (profileBranchEl) profileBranchEl.textContent = user.branch || 'N/A';
         
         // Also update form fields with new data
-        if (personalTab && personalTab.classList.contains('active')) {
-          document.getElementById('name').value = user.name || '';
-          document.getElementById('email').value = user.email || '';
-          document.getElementById('branch').value = user.branch || '';
-          document.getElementById('cgpa').value = user.cgpa || '';
+        if (skillsTab && skillsTab.classList.contains('active')) {
           document.getElementById('skills').value = user.skills ? user.skills.join(', ') : '';
-        } else if (preferencesTab && preferencesTab.classList.contains('active')) {
-          document.getElementById('interests').value = user.interests ? user.interests.join(', ') : '';
-          document.getElementById('preferredLocation').value = user.preferredLocation || '';
-          document.getElementById('preferredDuration').value = user.preferredDuration || '';
         }
       }
     } else {
@@ -1577,4 +1682,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.dashboardManager = new DashboardManager();
     // Call refreshRecommendations when the page loads
     refreshRecommendations();
+    
+    // Load student profile
+    loadStudentProfile();
 });

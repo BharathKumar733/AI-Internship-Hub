@@ -221,64 +221,58 @@
 
                     <div class="profile-main">
                         <div class="profile-tabs">
-                            <button class="profile-tab active" data-tab="personal">Personal Info</button>
+                            <button class="profile-tab active" data-tab="personal">Profile Info</button>
                             <button class="profile-tab" data-tab="skills">Skills & Resume</button>
-                            <button class="profile-tab" data-tab="preferences">Preferences</button>
                         </div>
 
                         <div class="profile-tab-content">
-                            <!-- Personal Info Tab -->
+                            <!-- Profile Info Tab (Read-only) -->
                             <div class="tab-pane active" id="personalTab">
-                                <form class="profile-form" id="personalForm" onsubmit="event.preventDefault(); updateProfileForm(event);">
+                                <form class="profile-form">
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label for="name">Full Name</label>
-                                            <input type="text" id="name" name="name" required>
+                                            <input type="text" id="name" name="name" readonly>
                                         </div>
                                         <div class="form-group">
                                             <label for="email">Email</label>
-                                            <input type="email" id="email" name="email" required>
+                                            <input type="email" id="email" name="email" readonly>
                                         </div>
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label for="branch">Branch</label>
-                                            <select id="branch" name="branch" required>
-                                                <option value="Computer Science">Computer Science</option>
-                                                <option value="Information Technology">Information Technology</option>
-                                                <option value="Electronics">Electronics & Communication</option>
-                                                <option value="Mechanical">Mechanical Engineering</option>
-                                                <option value="Civil">Civil Engineering</option>
-                                                <option value="Business">Business Administration</option>
-                                                <option value="Data Science">Data Science</option>
-                                            </select>
+                                            <input type="text" id="branch" name="branch" readonly>
                                         </div>
                                         <div class="form-group">
                                             <label for="cgpa">CGPA</label>
-                                            <input type="number" id="cgpa" name="cgpa" min="0" max="10" step="0.01" required>
+                                            <input type="number" id="cgpa" name="cgpa" min="0" max="10" step="0.01" readonly>
                                         </div>
                                     </div>
-                                    <!-- Add skills field for profile update -->
                                     <div class="form-group">
-                                        <label for="skills">Skills</label>
-                                        <input type="text" id="skills" name="skills" placeholder="JavaScript, Python, React">
-                                        <small>Separate multiple skills with commas</small>
+                                        <label for="interests">Interests</label>
+                                        <input type="text" id="interests" name="interests" readonly>
                                     </div>
-                                    <!-- Update button to use the new updateProfileForm function -->
-                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm(event)">Update Profile</button>
                                 </form>
                             </div>
 
-                            <!-- Skills & Resume Tab -->
+                            <!-- Skills & Resume Tab (Editable) -->
                             <div class="tab-pane" id="skillsTab">
+                                <div class="form-group">
+                                    <label for="skills">Skills</label>
+                                    <input type="text" id="skills" name="skills" placeholder="Add skills separated by commas">
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="updateSkills()">Update Skills</button>
+
                                 <div class="resume-upload">
                                     <h3>Resume Upload</h3>
                                     <div class="upload-area" id="uploadArea">
                                         <i class="fas fa-cloud-upload-alt"></i>
                                         <h4>Drop your resume here or click to browse</h4>
-                                        <p>Supports PDF, DOC, DOCX files (Max 5MB)</p>
-                                        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" hidden>
+                                        <p>Supports PDF files (Max 5MB)</p>
+                                        <input type="file" id="resumeFile" accept=".pdf" hidden>
                                     </div>
+                                    <button type="button" class="btn btn-primary" onclick="uploadResume()">Upload Resume</button>
                                     <div class="current-resume" id="currentResume" style="display: none;">
                                         <h4>Current Resume</h4>
                                         <div class="resume-info">
@@ -295,31 +289,6 @@
                                         <!-- Skills will be loaded here -->
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Preferences Tab -->
-                            <div class="tab-pane" id="preferencesTab">
-                                <form class="profile-form" id="preferencesForm" onsubmit="event.preventDefault(); updateProfileForm(event);">
-                                    <div class="form-group">
-                                        <label for="interests">Interests</label>
-                                        <input type="text" id="interests" name="interests" placeholder="Web Development, Data Science, AI">
-                                        <small>Separate multiple interests with commas</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="preferredLocation">Preferred Location</label>
-                                        <input type="text" id="preferredLocation" name="preferredLocation" placeholder="Bangalore, Mumbai, Remote">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="preferredDuration">Preferred Duration</label>
-                                        <select id="preferredDuration" name="preferredDuration">
-                                            <option value="1-3 months">1-3 months</option>
-                                            <option value="3-6 months">3-6 months</option>
-                                            <option value="6+ months">6+ months</option>
-                                        </select>
-                                    </div>
-                                    <!-- Update button to use the new updateProfileForm function -->
-                                    <button type="button" class="btn btn-primary" onclick="updateProfileForm(event)">Save Preferences</button>
-                                </form>
                             </div>
                         </div>
                     </div>
