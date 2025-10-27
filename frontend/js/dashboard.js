@@ -1378,7 +1378,11 @@ function logout() {
 // Include name, skills (split by commas), and interests (split by commas) in JSON body
 // After success, show "Profile updated successfully!" alert
 async function updateProfileForm(event) {
-  event.preventDefault();
+  // Handle case where function is called without an event (e.g., from onclick handler)
+  if (event && event.preventDefault) {
+    event.preventDefault();
+  }
+  
   const studentId = localStorage.getItem("studentId");
 
   if (!studentId) {
@@ -1386,12 +1390,33 @@ async function updateProfileForm(event) {
     return;
   }
 
-  const formData = {
-    name: document.getElementById("name").value,
-    email: document.getElementById("email").value,
-    skills: document.getElementById("skills").value.split(",").map(s => s.trim()),
-    interests: document.getElementById("interests").value.split(",").map(i => i.trim()),
+  // Determine which form triggered the update
+  let form = null;
+  if (event && event.target) {
+    // If called from an event, find the closest form
+    form = event.target.closest('form');
+  } else {
+    // If called directly, try to determine which form based on context
+    // We'll use the personal form as default, but this could be improved
+    form = document.getElementById("personalForm") || document.getElementById("preferencesForm");
+  }
+
+  // Get form data
+  let formData = {
+    name: document.getElementById("name")?.value,
+    email: document.getElementById("email")?.value,
+    skills: document.getElementById("skills")?.value.split(",").map(s => s.trim()).filter(s => s) || [],
+    interests: document.getElementById("interests")?.value.split(",").map(i => i.trim()).filter(i => i) || [],
+    branch: document.getElementById("branch")?.value,
+    cgpa: document.getElementById("cgpa")?.value,
+    preferredLocation: document.getElementById("preferredLocation")?.value,
+    preferredDuration: document.getElementById("preferredDuration")?.value
   };
+
+  // Clean up formData to remove undefined values
+  formData = Object.fromEntries(
+    Object.entries(formData).filter(([_, v]) => v !== undefined && v !== null && (Array.isArray(v) || v !== ""))
+  );
 
   try {
     const res = await fetch(`https://ai-internship-hub-backend.onrender.com/api/students/${studentId}`, {
