@@ -1,47 +1,20 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
 class EmailService {
   constructor() {
-    console.log('Initializing EmailService with SendGrid SMTP');
+    console.log('Initializing EmailService with SendGrid REST API');
     
     // Check if SENDGRID_API_KEY is available
     if (!process.env.SENDGRID_API_KEY) {
       console.error('❌ SENDGRID_API_KEY is missing. Email service will not work.');
-      this.transporter = null;
+      this.emailEnabled = false;
       return;
     }
     
-    console.log('SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? '****' : 'NOT SET');
-    
-    // Create transporter with SendGrid SMTP
-    const emailConfig = {
-      host: "smtp.sendgrid.net",
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: "apikey",
-        pass: process.env.SENDGRID_API_KEY
-      },
-      // Add timeout and security options for better reliability
-      tls: {
-        rejectUnauthorized: false
-      },
-      // Add timeout configuration
-      connectionTimeout: 30000, // 30 seconds
-      greetingTimeout: 30000,
-      socketTimeout: 30000
-    };
-    
-    this.transporter = nodemailer.createTransport(emailConfig);
-    
-    // Verify transporter configuration
-    this.transporter.verify((error, success) => {
-      if (error) {
-        console.error('❌ SendGrid Email transporter configuration error:', error);
-      } else {
-        console.log('✅ SendGrid Email transporter is ready to send messages');
-      }
-    });
+    // Set SendGrid API key
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    this.emailEnabled = true;
+    console.log('✅ SendGrid REST API initialized');
   }
 
   // Generate 6-digit OTP
@@ -52,16 +25,17 @@ class EmailService {
   // Send OTP email
   async sendOTP(email, otp, name) {
     try {
-      // Check if transporter is available
-      if (!this.transporter) {
-        console.error('❌ Email transporter not initialized. Cannot send OTP email.');
+      // Check if email service is enabled
+      if (!this.emailEnabled) {
+        console.error('❌ Email service not initialized. Cannot send OTP email.');
         return false;
       }
       
       console.log('Sending OTP email to:', email);
-      const mailOptions = {
-        from: `"AI Internship Hub" <${process.env.EMAIL_FROM || 'noreply@internshiphub.com'}>`,
+      
+      const msg = {
         to: email,
+        from: process.env.EMAIL_FROM || 'noreply@internshiphub.com',
         subject: 'Verify Your Email - OTP Code',
         html: `
           <!DOCTYPE html>
@@ -198,16 +172,14 @@ class EmailService {
         `
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('✅ OTP email sent:', info.messageId);
+      await sgMail.send(msg);
+      console.log('✅ OTP email sent via SendGrid REST API');
       return true;
     } catch (error) {
       console.error('❌ Error sending OTP email:', error);
-      // Log additional error details for debugging
-      console.error('Error code:', error.code);
-      console.error('Error command:', error.command);
-      
-      // Instead of throwing an error, we'll return false to indicate failure
+      if (error.response) {
+        console.error('SendGrid error response:', error.response.body);
+      }
       return false;
     }
   }
@@ -215,17 +187,17 @@ class EmailService {
   // Send welcome email after successful registration
   async sendWelcomeEmail(email, name, role) {
     try {
-      // Check if transporter is available
-      if (!this.transporter) {
-        console.error('❌ Email transporter not initialized. Cannot send welcome email.');
+      // Check if email service is enabled
+      if (!this.emailEnabled) {
+        console.error('❌ Email service not initialized. Cannot send welcome email.');
         return;
       }
       
       const roleDisplay = role === 'student' ? 'Student' : 'Company';
       
-      const mailOptions = {
-        from: `"AI Internship Hub" <${process.env.EMAIL_FROM || 'noreply@internshiphub.com'}>`,
+      const msg = {
         to: email,
+        from: process.env.EMAIL_FROM || 'noreply@internshiphub.com',
         subject: `Welcome to AI Internship Hub! 🎉`,
         html: `
           <!DOCTYPE html>
@@ -379,11 +351,13 @@ class EmailService {
         `
       };
 
-      await this.transporter.sendMail(mailOptions);
-      console.log('✅ Welcome email sent to:', email);
+      await sgMail.send(msg);
+      console.log('✅ Welcome email sent via SendGrid REST API to:', email);
     } catch (error) {
       console.error('❌ Error sending welcome email:', error);
-      // Don't throw error, welcome email is not critical
+      if (error.response) {
+        console.error('SendGrid error response:', error.response.body);
+      }
     }
   }
 }
