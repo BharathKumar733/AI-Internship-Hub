@@ -33,10 +33,9 @@ class DashboardManager {
     }
 
     setupSocketIO() {
-        // Initialize Socket.IO connection - Fix to connect to backend server
+        // Initialize Socket.IO connection
         if (typeof io !== 'undefined') {
-            // Connect to the backend server where Socket.IO is running
-            this.socket = io('https://ai-internship-hub-backend.onrender.com');
+            this.socket = io();
             
             this.socket.on('connect', () => {
                 console.log('🔌 Connected to real-time server');
