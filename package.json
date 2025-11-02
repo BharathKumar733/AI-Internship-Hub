@@ -1,0 +1,28 @@
+{
+  "name": "ai-internship-recommender",
+  "version": "1.0.0",
+  "description": "AI Internship Recommender System - Mobile App",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx cap copy",
+    "android": "npx cap open android",
+    "sync": "npx cap sync",
+    "build-android": "npx cap copy && npx cap open android"
+  },
+  "keywords": [
+    "internship",
+    "recommendation",
+    "ai",
+    "mobile"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/splash-screen": "^7.0.3",
+    "@capacitor/network": "^7.0.2"
+  }
+}

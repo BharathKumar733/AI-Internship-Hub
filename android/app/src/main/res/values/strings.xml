@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AI Internship Recommender</string>
+    <string name="title_activity_main">AI Internship Recommender</string>
+    <string name="package_name">com.aiinternship.recommender</string>
+    <string name="custom_url_scheme">com.aiinternship.recommender</string>
+</resources>

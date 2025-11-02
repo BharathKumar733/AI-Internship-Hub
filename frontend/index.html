@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Internship Recommender - Find Your Perfect Internship</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>AI Internship Hub</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#internships" class="nav-link">Internships</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-auth">
+                <a href="login.html" class="btn btn-outline">Login</a>
+                <a href="register.html" class="btn btn-primary">Get Started</a>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Find Your Perfect Internship with 
+                    <span class="gradient-text">AI-Powered Recommendations</span>
+                </h1>
+                <p class="hero-description">
+                    Upload your resume, get personalized internship recommendations, and connect with top companies. 
+                    Our AI analyzes your skills and matches you with the best opportunities.
+                </p>
+                <div class="hero-buttons">
+                    <a href="register.html" class="btn btn-primary btn-large">
+                        <i class="fas fa-rocket"></i>
+                        Start Your Journey
+                    </a>
+                    <a href="#internships" class="btn btn-outline btn-large">
+                        <i class="fas fa-search"></i>
+                        Browse Internships
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Active Internships</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">1000+</span>
+                        <span class="stat-label">Students</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">200+</span>
+                        <span class="stat-label">Companies</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-card">
+                    <div class="card-header">
+                        <div class="card-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="card-info">
+                            <h4>Dark Devil</h4>
+                            <p>Computer Science Student</p>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="match-score">
+                            <span class="score-label">Match Score</span>
+                            <span class="score-value">95%</span>
+                        </div>
+                        <div class="recommendations">
+                            <h5>Recommended Internships</h5>
+                            <div class="recommendation-item">
+                                <i class="fas fa-code"></i>
+                                <span>Software Developer Intern</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Data Science Intern</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose Our Platform?</h2>
+                <p>Advanced AI technology meets user-friendly design</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>AI-Powered Matching</h3>
+                    <p>Our advanced AI analyzes your resume, skills, and preferences to find the perfect internship matches.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h3>Easy Resume Upload</h3>
+                    <p>Simply upload your resume in PDF or DOCX format. Our AI extracts skills and qualifications automatically.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>Smart Analytics</h3>
+                    <p>Get insights into your profile strength and see how you compare with other candidates.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3>Direct Application</h3>
+                    <p>Apply directly to internships with one click. Track your applications and get real-time updates.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3>Top Companies</h3>
+                    <p>Connect with leading companies across various industries. From startups to Fortune 500 companies.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure & Private</h3>
+                    <p>Your data is protected with enterprise-grade security. We never share your information without consent.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Internships Section -->
+    <section id="internships" class="internships">
+        <div class="container">
+            <div class="section-header">
+                <h2>Featured Internships</h2>
+                <p>Discover amazing opportunities from top companies</p>
+            </div>
+            <div class="internships-grid" id="internshipsGrid">
+                <!-- Internships will be loaded here -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading internships...</p>
+                </div>
+            </div>
+            <div class="text-center">
+                <a href="login.html" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login to View All Internships
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-header">
+                <h2>About AI Internship Hub</h2>
+                <p>Connecting students with their dream internships through AI-powered matching</p>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Our Mission</h3>
+                    <p>At AI Internship Hub, we believe that every student deserves access to meaningful internship opportunities that align with their skills, interests, and career goals. Our platform bridges the gap between talented students and innovative companies through the power of artificial intelligence.</p>
+                    
+                    <h3>How We're Different</h3>
+                    <p>Unlike traditional job boards, our platform uses advanced AI algorithms to match students with internships based on their unique profiles. We analyze resumes, skills, academic performance, and personal interests to provide personalized recommendations that increase the chances of successful placements.</p>
+                    
+                    <h3>Our Technology</h3>
+                    <p>Our proprietary AI engine processes thousands of data points to create comprehensive student profiles. Using natural language processing and machine learning, we extract skills from resumes, analyze internship requirements, and generate precise matches that benefit both students and companies.</p>
+                    
+                    <div class="stats-highlights">
+                        <div class="stat-highlight">
+                            <i class="fas fa-graduation-cap"></i>
+                            <div>
+                                <span class="highlight-number">95%</span>
+                                <span class="highlight-text">Student Satisfaction Rate</span>
+                            </div>
+                        </div>
+                        <div class="stat-highlight">
+                            <i class="fas fa-building"></i>
+                            <div>
+                                <span class="highlight-number">200+</span>
+                                <span class="highlight-text">Partner Companies</span>
+                            </div>
+                        </div>
+                        <div class="stat-highlight">
+                            <i class="fas fa-briefcase"></i>
+                            <div>
+                                <span class="highlight-number">1000+</span>
+                                <span class="highlight-text">Successful Placements</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div class="about-card">
+                        <div class="card-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4>AI-Powered Matching</h4>
+                        <p>Our advanced algorithms analyze your profile and match you with the perfect internships.</p>
+                    </div>
+                    <div class="about-card">
+                        <div class="card-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Secure & Private</h4>
+                        <p>Your data is protected with enterprise-grade security and never shared without consent.</p>
+                    </div>
+                    <div class="about-card">
+                        <div class="card-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h4>24/7 Support</h4>
+                        <p>Our dedicated support team is always ready to help you with any questions or issues.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>Get started in just a few simple steps</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Create Your Profile</h3>
+                        <p>Sign up as a student and complete your profile with basic information like branch, CGPA, and interests.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Upload Your Resume</h3>
+                        <p>Upload your resume in PDF or DOCX format. Our AI will analyze it and extract your skills automatically.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Get Recommendations</h3>
+                        <p>Receive personalized internship recommendations based on your skills, preferences, and career goals.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Apply & Get Hired</h3>
+                        <p>Apply to internships with one click and track your applications. Get hired by your dream company!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2>Contact Us</h2>
+                <p>Have questions? We're here to help!</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Our Location</h4>
+                            <p>Tech Park, Bangalore<br>Karnataka, India 560001</p>
+                        </div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Email Us</h4>
+                            <p>support@internshiphub.com<br>partnerships@internshiphub.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Call Us</h4>
+                            <p>+91 1234567890<br>Monday-Friday, 9AM-6PM IST</p>
+                        </div>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Business Hours</h4>
+                            <p>Monday - Friday: 9:00 AM - 6:00 PM<br>Saturday: 10:00 AM - 2:00 PM<br>Sunday: Closed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form id="contactForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Find Your Dream Internship?</h2>
+                <p>Join thousands of students who have already found their perfect internship match.</p>
+                <div class="cta-buttons">
+                    <a href="register.html" class="btn btn-primary btn-large">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </a>
+                    <a href="login.html" class="btn btn-outline btn-large">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>AI Internship Hub</span>
+                    </div>
+                    <p>Connecting students with their dream internships through AI-powered matching technology.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>For Students</h4>
+                    <ul>
+                        <li><a href="register.html">Create Account</a></li>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="#internships">Browse Internships</a></li>
+                        <li><a href="#about">How It Works</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>For Companies</h4>
+                    <ul>
+                        <li><a href="register.html">Post Internships</a></li>
+                        <li><a href="login.html">Company Login</a></li>
+                        <li><a href="#about">Find Talent</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#contact">Help Center</a></li>
+                        <li><a href="#contact">Contact Support</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#contact">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AI Internship Hub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Handle contact form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // In a real application, you would send this data to your server
+            // For now, we'll just show a success message
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+    </script>
+    <script src="js/main.js"></script>
+    <script type="module" src="js/capacitor.js"></script>
+</body>
+</html>
